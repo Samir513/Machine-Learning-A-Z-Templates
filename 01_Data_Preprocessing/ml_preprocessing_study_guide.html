@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ML Data Preprocessing — Study Guide | دليل الدراسة</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --bg2: #111827;
+    --bg3: #1a2235;
+    --border: #1e3a5f;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #a855f7;
+    --green: #00ff88;
+    --yellow: #ffd166;
+    --red: #ff4d6d;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --ar: #ffd166;
+    --code-bg: #0d1117;
+    --phase1: #00e5ff;
+    --phase2: #00ff88;
+    --phase3: #a855f7;
+    --phase4: #ff6b35;
+    --phase5: #ffd166;
+    --phase6: #ff4d6d;
+    --phase7: #06b6d4;
+    --phase8: #8b5cf6;
+    --ai: #10b981;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .sidebar-title {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--text);
+  }
+  .sidebar-title span {
+    display: block;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    color: var(--ar);
+    font-weight: 600;
+    margin-top: 3px;
+  }
+  .nav-section {
+    padding: 12px 0;
+  }
+  .nav-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    padding: 6px 20px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .nav-item:hover, .nav-item.active {
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+  }
+  .nav-item.active { border-left-color: var(--accent); }
+  .nav-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .nav-ar {
+    display: block;
+    font-family: 'Cairo', sans-serif;
+    font-size: 11px;
+    color: inherit;
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+  .progress-bar {
+    margin: 16px 20px;
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    width: 0%;
+    transition: width 0.5s ease;
+    border-radius: 4px;
+  }
+  .progress-text {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 0 20px 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  .hero {
+    background: linear-gradient(135deg, #0a0e17 0%, #0d1f3c 50%, #0a0e17 100%);
+    padding: 60px 64px 48px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 40%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #ffffff 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .hero h1 span {
+    display: block;
+    font-family: 'Cairo', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--ar) 0%, #ff9a3c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin-top: 14px;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 30px;
+  }
+  .stat {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* ── PHASE SECTIONS ── */
+  .content-area { padding: 0 64px 80px; }
+  .phase-section {
+    margin-top: 60px;
+    scroll-margin-top: 24px;
+  }
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  .phase-number {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .phase-titles { flex: 1; }
+  .phase-title-en {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .phase-title-ar {
+    font-family: 'Cairo', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ar);
+    margin-top: 4px;
+    direction: rtl;
+  }
+  .phase-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: var(--code-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .code-dots span {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .code-dots .d1 { background: #ff5f57; }
+  .code-dots .d2 { background: #febc2e; }
+  .code-dots .d3 { background: #28c840; }
+  .code-lang {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+  }
+  .copy-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+  pre.code-body {
+    padding: 20px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: #e2e8f0;
+  }
+  /* Syntax colors */
+  .kw { color: #c792ea; font-weight: bold; }
+  .fn { color: #82aaff; }
+  .str { color: #c3e88d; }
+  .num { color: #f78c6c; }
+  .cmt { color: #546e7a; font-style: italic; }
+  .cls { color: #ffcb6b; }
+  .var { color: #eeffff; }
+  .op { color: #89ddff; }
+  .param { color: #f07178; }
+  .line-num {
+    display: inline-block;
+    width: 30px;
+    color: #3d5066;
+    user-select: none;
+    text-align: right;
+    margin-right: 18px;
+  }
+
+  /* ── EXPLANATION CARDS ── */
+  .explanation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card-en { border-top: 3px solid var(--accent); }
+  .card-ar { border-top: 3px solid var(--ar); direction: rtl; text-align: right; }
+  .card-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-ar .card-label { direction: rtl; justify-content: flex-end; font-family: 'Cairo', sans-serif; }
+  .card-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .card-ar .card-text {
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .card-text code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(0,229,255,0.1);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .card-ar .card-text code {
+    direction: ltr;
+    display: inline-block;
+  }
+
+  /* ── LINE ANNOTATIONS ── */
+  .annotations {
+    background: var(--bg3);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .annotation-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .annotation-row {
+    display: flex;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    align-items: flex-start;
+  }
+  .annotation-row:last-child { border-bottom: none; }
+  .ann-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 6px;
+    padding: 4px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 180px;
+  }
+  .ann-desc {
+    flex: 1;
+  }
+  .ann-en { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .ann-ar { font-family: 'Cairo', sans-serif; font-size: 13px; color: var(--ar); direction: rtl; text-align: right; margin-top: 3px; line-height: 1.5; }
+
+  /* ── MEMORY TIP ── */
+  .memory-tip {
+    background: linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(0,229,255,0.05) 100%);
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .tip-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .tip-content { flex: 1; }
+  .tip-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent3);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+  }
+  .tip-en { font-size: 13px; color: var(--text); margin-bottom: 6px; line-height: 1.6; }
+  .tip-ar { font-family: 'Cairo', sans-serif; font-size: 14px; color: var(--ar); direction: rtl; text-align: right; line-height: 1.6; }
+
+  /* ── Q&A ── */
+  .qa-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .qa-title {
+    background: rgba(255,255,255,0.03);
+    padding: 14px 20px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .qa-item { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .qa-item:last-child { border-bottom: none; }
+  .qa-question {
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    transition: background 0.2s;
+  }
+  .qa-question:hover { background: rgba(255,255,255,0.02); }
+  .qa-q-text { font-size: 14px; color: var(--text); flex: 1; line-height: 1.5; }
+  .qa-q-text em { display: block; font-family: 'Cairo', sans-serif; font-size: 13px; color: var(--ar); font-style: normal; margin-top: 4px; direction: rtl; text-align: right; }
+  .qa-arrow {
+    color: var(--text-dim);
+    font-size: 12px;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .qa-answer {
+    display: none;
+    padding: 0 20px 18px;
+    border-top: 1px dashed rgba(255,255,255,0.06);
+  }
+  .qa-answer.open { display: block; }
+  .qa-arrow.open { transform: rotate(180deg); }
+  .qa-ans-en { font-size: 13.5px; color: var(--text-dim); line-height: 1.7; margin-bottom: 10px; margin-top: 14px; }
+  .qa-ans-ar { font-family: 'Cairo', sans-serif; font-size: 14px; color: var(--ar); direction: rtl; text-align: right; line-height: 1.7; opacity: 0.85; }
+  .qa-ans-en code, .qa-ans-ar code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(0,229,255,0.1);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+    direction: ltr;
+    display: inline-block;
+  }
+
+  /* ── PIPELINE VISUAL ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 40px 0 48px;
+    overflow-x: auto;
+    padding: 4px 0 12px;
+  }
+  .pipe-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+  }
+  .pipe-box {
+    width: 80px; height: 80px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 2px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .pipe-box:hover { transform: translateY(-4px); }
+  .pipe-box-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    position: absolute;
+    top: 4px; right: 8px;
+    opacity: 0.6;
+  }
+  .pipe-label {
+    font-size: 10px;
+    text-align: center;
+    margin-top: 8px;
+    color: var(--text-dim);
+    max-width: 90px;
+    line-height: 1.3;
+  }
+  .pipe-arrow {
+    font-size: 20px;
+    color: var(--text-dim);
+    padding: 0 4px;
+    margin-bottom: 28px;
+  }
+
+  /* ── AI TIPS PAGE ── */
+  .ai-section {
+    margin-top: 70px;
+    padding-top: 40px;
+    border-top: 2px solid rgba(16,185,129,0.3);
+    scroll-margin-top: 24px;
+  }
+  .ai-hero {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(0,229,255,0.05) 100%);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 18px;
+    padding: 32px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-hero::before {
+    content: '🤖';
+    position: absolute;
+    right: 30px; top: 20px;
+    font-size: 80px;
+    opacity: 0.12;
+  }
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.4);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ai);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .ai-hero h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .ai-hero h2 span {
+    font-family: 'Cairo', sans-serif;
+    font-size: 18px;
+    color: var(--ar);
+    display: block;
+    margin-top: 4px;
+  }
+  .ai-hero p {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-top: 12px;
+    max-width: 620px;
+  }
+
+  .tip-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .tip-block-header {
+    background: rgba(255,255,255,0.03);
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .tip-block-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .tip-block-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .tip-block-subtitle {
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    color: var(--ar);
+    direction: rtl;
+    text-align: right;
+    margin-top: 2px;
+  }
+  .tip-block-body { padding: 22px; }
+  .tip-block-desc {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .tip-block-ar {
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    color: var(--ar);
+    direction: rtl;
+    text-align: right;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    opacity: 0.85;
+    padding: 12px;
+    background: rgba(255,209,102,0.05);
+    border-radius: 8px;
+    border-right: 3px solid var(--ar);
+  }
+
+  /* ── DEEP QUESTIONS ── */
+  .deep-q {
+    background: var(--bg2);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .deep-q-header {
+    background: linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(0,229,255,0.05) 100%);
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+  }
+  .deep-q-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .deep-q-title span {
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    color: var(--ar);
+    display: block;
+    margin-top: 4px;
+    direction: rtl;
+  }
+  .deep-q-item {
+    padding: 18px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .deep-q-item:last-child { border-bottom: none; }
+  .deep-q-item:hover { background: rgba(255,255,255,0.02); }
+  .dq-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    margin-bottom: 6px;
+  }
+  .dq-text { font-size: 14px; color: var(--text); line-height: 1.6; margin-bottom: 4px; }
+  .dq-text-ar {
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    color: var(--ar);
+    direction: rtl;
+    text-align: right;
+    opacity: 0.8;
+    margin-bottom: 10px;
+  }
+  .dq-answer {
+    display: none;
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 10px;
+    border-left: 3px solid var(--accent3);
+  }
+  .dq-answer.open { display: block; }
+  .dq-ans-en { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin-bottom: 8px; }
+  .dq-ans-ar { font-family: 'Cairo', sans-serif; font-size: 14px; color: var(--ar); direction: rtl; text-align: right; line-height: 1.7; opacity: 0.85; }
+  .dq-ans-en code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(0,229,255,0.1);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .show-ans-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.3);
+    color: var(--accent3);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .show-ans-btn:hover { background: rgba(168,85,247,0.2); }
+
+  /* ── CHEAT SHEET ── */
+  .cheatsheet {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .cs-header {
+    padding: 16px 22px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cs-row {
+    display: grid;
+    grid-template-columns: 2fr 3fr 3fr;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 12px 22px;
+    align-items: center;
+  }
+  .cs-row:last-child { border-bottom: none; }
+  .cs-row:nth-child(even) { background: rgba(255,255,255,0.015); }
+  .cs-code { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); }
+  .cs-desc { font-size: 13px; color: var(--text-dim); padding: 0 16px; }
+  .cs-ar { font-family: 'Cairo', sans-serif; font-size: 13px; color: var(--ar); direction: rtl; text-align: right; }
+
+  /* ── DIVIDER ── */
+  .phase-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 48px 0 0;
+  }
+
+  /* ── OUTPUT PREVIEW ── */
+  .output-preview {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: #7ec8a4;
+    overflow-x: auto;
+  }
+  .output-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 40px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .content-area { padding: 0 24px 60px; }
+    .hero { padding: 40px 24px 32px; }
+    .hero h1 { font-size: 28px; }
+    .explanation-grid { grid-template-columns: 1fr; }
+    .cs-row { grid-template-columns: 1fr 1fr; }
+    .cs-ar { display: none; }
+    .hero-stats { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">ML A-Z · Section 2</div>
+    <div class="sidebar-title">Data Preprocessing <span>معالجة البيانات</span></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText">0 / 8 phases</div>
+
+  <div class="nav-section">
+    <div class="nav-label">📋 Phases</div>
+    <a class="nav-item active" href="#phase1" data-phase="1">
+      <span class="nav-dot" style="background:#00e5ff"></span>
+      <span>Importing Libraries <span class="nav-ar">استيراد المكتبات</span></span>
+    </a>
+    <a class="nav-item" href="#phase2" data-phase="2">
+      <span class="nav-dot" style="background:#00ff88"></span>
+      <span>Load Dataset <span class="nav-ar">تحميل البيانات</span></span>
+    </a>
+    <a class="nav-item" href="#phase3" data-phase="3">
+      <span class="nav-dot" style="background:#a855f7"></span>
+      <span>Split X &amp; y <span class="nav-ar">فصل المتغيرات</span></span>
+    </a>
+    <a class="nav-item" href="#phase4" data-phase="4">
+      <span class="nav-dot" style="background:#ff6b35"></span>
+      <span>Missing Data <span class="nav-ar">البيانات الناقصة</span></span>
+    </a>
+    <a class="nav-item" href="#phase5" data-phase="5">
+      <span class="nav-dot" style="background:#ffd166"></span>
+      <span>Encode X (OneHot) <span class="nav-ar">ترميز المستقل</span></span>
+    </a>
+    <a class="nav-item" href="#phase6" data-phase="6">
+      <span class="nav-dot" style="background:#ff4d6d"></span>
+      <span>Encode y (Label) <span class="nav-ar">ترميز التابع</span></span>
+    </a>
+    <a class="nav-item" href="#phase7" data-phase="7">
+      <span class="nav-dot" style="background:#06b6d4"></span>
+      <span>Train/Test Split <span class="nav-ar">تقسيم التدريب</span></span>
+    </a>
+    <a class="nav-item" href="#phase8" data-phase="8">
+      <span class="nav-dot" style="background:#8b5cf6"></span>
+      <span>Feature Scaling <span class="nav-ar">تحجيم الميزات</span></span>
+    </a>
+    <a class="nav-item" href="#ai-tips" style="margin-top:8px; border-top:1px solid var(--border); padding-top:18px;">
+      <span class="nav-dot" style="background:#10b981"></span>
+      <span>🤖 AI Tips <span class="nav-ar">نصائح الذكاء الاصطناعي</span></span>
+    </a>
+  </div>
+</nav>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main class="main" id="mainContent">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">📊 Machine Learning A-Z · Data Preprocessing</div>
+    <h1>Data Preprocessing in Python
+      <span>معالجة البيانات بـ Python</span>
+    </h1>
+    <p class="hero-sub">A complete bilingual study guide — English &amp; Egyptian Arabic — covering every code block, every line, with Q&amp;A, memory tips, and AI-powered next steps.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">8</div><div class="stat-label">Phases</div></div>
+      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Libraries</div></div>
+      <div class="stat"><div class="stat-num">24</div><div class="stat-label">Q&amp;A Items</div></div>
+      <div class="stat"><div class="stat-num">🇳🇱</div><div class="stat-label">Sam's Study</div></div>
+    </div>
+  </div>
+
+  <!-- PIPELINE OVERVIEW -->
+  <div class="content-area">
+    <div style="margin-top:48px; margin-bottom:8px; font-size:11px; text-transform:uppercase; letter-spacing:3px; color:var(--text-dim); font-family:'JetBrains Mono',monospace;">📍 The Full Pipeline</div>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(0,229,255,0.08);border-color:rgba(0,229,255,0.4);" onclick="document.getElementById('phase1').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">01</span>📦
+        </div>
+        <div class="pipe-label">Import<br/>Libraries</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(0,255,136,0.08);border-color:rgba(0,255,136,0.4);" onclick="document.getElementById('phase2').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">02</span>📂
+        </div>
+        <div class="pipe-label">Load<br/>Dataset</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(168,85,247,0.08);border-color:rgba(168,85,247,0.4);" onclick="document.getElementById('phase3').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">03</span>✂️
+        </div>
+        <div class="pipe-label">Split X<br/>&amp; y</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(255,107,53,0.08);border-color:rgba(255,107,53,0.4);" onclick="document.getElementById('phase4').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">04</span>🔧
+        </div>
+        <div class="pipe-label">Handle<br/>Missing</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(255,209,102,0.08);border-color:rgba(255,209,102,0.4);" onclick="document.getElementById('phase5').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">05</span>🏷️
+        </div>
+        <div class="pipe-label">Encode<br/>X</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(255,77,109,0.08);border-color:rgba(255,77,109,0.4);" onclick="document.getElementById('phase6').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">06</span>🔢
+        </div>
+        <div class="pipe-label">Encode<br/>y</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.4);" onclick="document.getElementById('phase7').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">07</span>🔀
+        </div>
+        <div class="pipe-label">Train/<br/>Test</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step">
+        <div class="pipe-box" style="background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.4);" onclick="document.getElementById('phase8').scrollIntoView({behavior:'smooth'})">
+          <span class="pipe-box-num">08</span>⚖️
+        </div>
+        <div class="pipe-label">Feature<br/>Scaling</div>
+      </div>
+    </div>
+
+    <!-- ══ PHASE 1 ══ -->
+    <div class="phase-section" id="phase1">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(0,229,255,0.1);color:var(--phase1);border:2px solid rgba(0,229,255,0.3);">01</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Importing Libraries</div>
+          <div class="phase-title-ar">استيراد المكتبات</div>
+          <span class="phase-tag" style="background:rgba(0,229,255,0.1);color:var(--phase1);">Foundation</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [16]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="kw">import</span> <span class="cls">numpy</span> <span class="kw">as</span> <span class="var">np</span>
+<span class="line-num">2</span><span class="kw">import</span> <span class="cls">matplotlib.pyplot</span> <span class="kw">as</span> <span class="var">plt</span>
+<span class="line-num">3</span><span class="kw">import</span> <span class="cls">pandas</span> <span class="kw">as</span> <span class="var">pd</span></pre>
+      </div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text">These 3 lines are the <strong>holy trinity</strong> of Python data science. <code>numpy</code> handles numerical arrays and math. <code>matplotlib.pyplot</code> creates visualizations (graphs, charts). <code>pandas</code> gives us DataFrames — think Excel but programmable. The <code>as</code> keyword creates a short alias so you type <code>np</code> instead of <code>numpy</code> every time.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text">الـ 3 سطور دول هم الـ "ثالوث المقدس" في data science بـ Python. <code>numpy</code> بيتعامل مع الأرقام والمصفوفات. <code>matplotlib</code> بيرسم الرسوم البيانية والجرافس. <code>pandas</code> بيعملك DataFrame — زي Excel بس بتكتبله كود. الـ <code>as</code> بيعمل اسم مختصر عشان متكتبش الاسم الطويل في كل مرة.</div>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <div class="annotation-title">🔍 Line-by-Line Breakdown · شرح سطر بسطر</div>
+        <div class="annotation-row">
+          <span class="ann-code">import numpy as np</span>
+          <div class="ann-desc">
+            <div class="ann-en">Imports the NumPy library — the engine for fast numerical computation and array manipulation.</div>
+            <div class="ann-ar">بيستورد مكتبة NumPy — المحرك اللي بيتعامل مع الأرقام والمصفوفات بسرعة عالية.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">import matplotlib.pyplot as plt</span>
+          <div class="ann-desc">
+            <div class="ann-en">Imports the plotting module from Matplotlib — used for visualizing data in graphs.</div>
+            <div class="ann-ar">بيستورد أداة الرسم من Matplotlib — بنستخدمها نرسم الداتا في جرافس وصور.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">import pandas as pd</span>
+          <div class="ann-desc">
+            <div class="ann-en">Imports Pandas — the library for loading, reading, and manipulating structured tabular data (CSVs, Excel, etc).</div>
+            <div class="ann-ar">بيستورد Pandas — المكتبة اللي بنقرأ بيها الـ CSV وبنشتغل على الجداول والبيانات المنظمة.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">Memory Tip · تلميح للحفظ</div>
+          <div class="tip-en">Remember <strong>NPM</strong> = <strong>N</strong>umpy, <strong>P</strong>andas, <strong>M</strong>atplotlib — like npm in web dev but for data science! Always import in this order: numbers first, visualization second, data last.</div>
+          <div class="tip-ar">اتذكر <strong>NPM</strong> = <strong>N</strong>umpy, <strong>P</strong>andas, <strong>M</strong>atplotlib — زي npm بس للداتا ساينس! دايما استورد بالترتيب ده: الأرقام الأول، الرسم التاني، البيانات الآخر.</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 1</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Why do we use <code>as np</code> instead of just importing numpy?<em>ليه بنكتب <code>as np</code> بدل ما نكتب numpy كل مرة؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">It creates a short <strong>alias</strong>. Without it, you'd have to write <code>numpy.array()</code> every single time. With <code>import numpy as np</code>, you just write <code>np.array()</code>. It saves typing and makes code cleaner. The aliases <code>np</code>, <code>pd</code>, and <code>plt</code> are universal conventions — every data scientist in the world uses them.</div>
+            <div class="qa-ans-ar">بيعمل اسم مختصر. من غيره هتكتب <code>numpy.array()</code> في كل سطر. بالـ alias بتكتب <code>np.array()</code> بس. الاختصارات دي (np, pd, plt) اتفاقية عالمية — كل data scientist في الدنيا بيستخدمها.</div>
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Do we always need matplotlib for preprocessing?<em>هل بنحتاج matplotlib دايماً في الـ preprocessing؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">Not always for the preprocessing itself, but it's imported as a <strong>standard starter</strong>. In practice you'll use it to visualize your data before and after preprocessing — checking for outliers, seeing distributions, and validating your transformations made sense.</div>
+            <div class="qa-ans-ar">مش دايماً للـ preprocessing نفسها، بس بنستوردها كـ "starter standard". في الواقع هتستخدمها ترسم بياناتك قبل وبعد المعالجة — تشوف الـ outliers والتوزيعات وتتأكد التحويلات اتعملت صح.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-divider"></div>
+
+    <!-- ══ PHASE 2 ══ -->
+    <div class="phase-section" id="phase2">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(0,255,136,0.1);color:var(--phase2);border:2px solid rgba(0,255,136,0.3);">02</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Loading the Dataset</div>
+          <div class="phase-title-ar">تحميل مجموعة البيانات</div>
+          <span class="phase-tag" style="background:rgba(0,255,136,0.1);color:var(--phase2);">Input</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [17]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="var">df</span> <span class="op">=</span> <span class="var">pd</span>.<span class="fn">read_csv</span>(<span class="str">'Data.csv'</span>)
+<span class="line-num">2</span><span class="var">df</span></pre>
+      </div>
+
+      <div class="output-preview">
+        <div class="output-label">Output — The Dataset</div>
+Country  | Age  | Salary   | Purchased
+---------|------|----------|-----------
+France   | 44.0 | 72000.0  | No
+Spain    | 27.0 | 48000.0  | Yes
+Germany  | 30.0 | 54000.0  | No
+Spain    | 38.0 | 61000.0  | No
+Germany  | 40.0 | NaN      | Yes   ← missing!
+France   | 35.0 | 58000.0  | Yes
+Spain    | NaN  | 52000.0  | No    ← missing!
+France   | 48.0 | 79000.0  | Yes
+Germany  | 50.0 | 83000.0  | No
+France   | 37.0 | 67000.0  | Yes</div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text"><code>pd.read_csv('Data.csv')</code> reads a CSV file from disk and converts it into a <strong>DataFrame</strong> — pandas' core data structure. <code>df</code> is just the variable name (convention for "dataframe"). Typing <code>df</code> alone on the last line displays it as a formatted table in Jupyter. Notice two <strong>NaN</strong> values (missing data) we'll fix in Phase 4.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text"><code>pd.read_csv('Data.csv')</code> بيقرأ ملف CSV من الكمبيوتر ويحوله لـ <strong>DataFrame</strong> — الهيكل الأساسي في pandas. الاسم <code>df</code> اختصار لـ "dataframe" وهو اتفاقية. لما بتكتب <code>df</code> وحده في Jupyter بيعرضه كجدول. لاحظ في الداتا في قيمتين <strong>NaN</strong> (ناقصة) هنصلحها في الـ Phase 4.</div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">Memory Tip · تلميح للحفظ</div>
+          <div class="tip-en"><strong>pd.read_csv()</strong> = "Pandas, read this CSV!" — <code>pd</code> is the librarian, <code>read_csv</code> is the action, and the string in quotes is the filename. Always store the result in <code>df</code>.</div>
+          <div class="tip-ar"><strong>pd.read_csv()</strong> = "يا Pandas، اقرأ الـ CSV ده!" — <code>pd</code> هو المكتبجي، <code>read_csv</code> هو الأمر، والاسم بين الـ quotes هو اسم الملف. دايماً احفظ النتيجة في <code>df</code>.</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 2</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">What is NaN and why does it appear?<em>إيه هو NaN وليه بيظهر؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en"><strong>NaN</strong> = "Not a Number" — it's how Python/NumPy represents missing or undefined data. It appears when a CSV cell is empty. The dataset has 2 NaN values: one in Age (row 6) and one in Salary (row 4). If you don't handle them, most ML algorithms will crash or give wrong results.</div>
+            <div class="qa-ans-ar"><strong>NaN</strong> = "Not a Number" — ده اللي بيحط Python/NumPy في الخلية الفاضية. بيظهر لما في خلية فاضية في الـ CSV. الداتا عندنا فيها 2 NaN: واحد في Age وواحد في Salary. لو ماعالجتهاش معظم خوارزميات الـ ML هتكرش أو تدي نتايج غلط.</div>
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">What's the difference between a DataFrame and a regular Python list?<em>إيه الفرق بين DataFrame وـ list عادي في Python؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">A Python list is just a simple sequence. A <strong>DataFrame</strong> is a 2D labeled table with: named columns, index rows, mixed data types per column, built-in filtering/grouping/joining operations, and direct integration with every ML library. It's like comparing a shopping list (list) to Excel (DataFrame).</div>
+            <div class="qa-ans-ar">الـ Python list مجرد تسلسل بسيط. الـ <strong>DataFrame</strong> جدول ثنائي الأبعاد مع: أعمدة مسماة، فهرسة للصفوف، أنواع بيانات مختلفة لكل عمود، عمليات فلترة وتجميع وربط جاهزة، وتكامل مباشر مع كل مكتبات الـ ML. الفرق زي قايمة مشتريات (list) مقابل Excel (DataFrame).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-divider"></div>
+
+    <!-- ══ PHASE 3 ══ -->
+    <div class="phase-section" id="phase3">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(168,85,247,0.1);color:var(--phase3);border:2px solid rgba(168,85,247,0.3);">03</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Separating Features (X) and Target (y)</div>
+          <div class="phase-title-ar">فصل المتغيرات المستقلة والتابعة</div>
+          <span class="phase-tag" style="background:rgba(168,85,247,0.1);color:var(--phase3);">Data Split</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [18]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="var">X</span> <span class="op">=</span> <span class="var">df</span>.<span class="fn">iloc</span>[: , :-<span class="num">1</span>]  <span class="cmt"># all independent columns except the last (dependent)</span>
+<span class="line-num">2</span><span class="var">y</span> <span class="op">=</span> <span class="var">df</span>.<span class="fn">iloc</span>[:, -<span class="num">1</span>]   <span class="cmt"># the last column only (dependent variable)</span></pre>
+      </div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text"><code>iloc</code> = "integer location" — selects rows and columns by position number. <code>[:, :-1]</code> means "all rows, all columns except the last one" → this is <strong>X</strong> (features: Country, Age, Salary). <code>[:, -1]</code> means "all rows, only the last column" → this is <strong>y</strong> (target: Purchased). In ML: X is input, y is what we predict.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text"><code>iloc</code> = بيختار صفوف وأعمدة بالرقم (الـ position). <code>[:, :-1]</code> معناها "كل الصفوف، كل الأعمدة إلا الأخير" → ده <strong>X</strong> (المدخلات: Country, Age, Salary). <code>[:, -1]</code> معناها "كل الصفوف، العمود الأخير بس" → ده <strong>y</strong> (المخرج: Purchased). في الـ ML: X هو الإدخال، y هو اللي بنتنبأ بيه.</div>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <div class="annotation-title">🔍 iloc Syntax Decoded · فك شفرة iloc</div>
+        <div class="annotation-row">
+          <span class="ann-code">df.iloc[rows, cols]</span>
+          <div class="ann-desc">
+            <div class="ann-en">The general form: first argument selects ROWS, second selects COLUMNS by integer position.</div>
+            <div class="ann-ar">الشكل العام: الأرقومنت الأول يختار الصفوف، التاني الأعمدة بالرقم.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">: (colon alone)</span>
+          <div class="ann-desc">
+            <div class="ann-en">Means "select ALL" — all rows or all columns. Think of it as "everything".</div>
+            <div class="ann-ar">معناها "اختار الكل" — كل الصفوف أو كل الأعمدة. فكر فيها كـ "الكل".</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">:-1 (negative index)</span>
+          <div class="ann-desc">
+            <div class="ann-en">From the start up to (but NOT including) the last element. <code>-1</code> refers to the last position.</div>
+            <div class="ann-ar">من الأول لحد (بدون) آخر عنصر. <code>-1</code> بترجع من الآخر.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">-1 (alone)</span>
+          <div class="ann-desc">
+            <div class="ann-en">Selects ONLY the last element/column. No colon before it = just that one.</div>
+            <div class="ann-ar">بيختار آخر عنصر/عمود بس. من غير نقطتين قبله = واحد بس.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">Memory Tip · تلميح للحفظ</div>
+          <div class="tip-en"><strong>X</strong> = everything EXCEPT the answer. <strong>y</strong> = ONLY the answer. In exams, the teacher gives you questions (X) and you write one answer (y). Think of <code>:-1</code> as "all but the last", and <code>-1</code> as "just the last".</div>
+          <div class="tip-ar"><strong>X</strong> = كل حاجة إلا الإجابة. <strong>y</strong> = الإجابة بس. في الامتحان: الأستاذ بيديك أسئلة (X) وانت بتكتب إجابة واحدة (y). <code>:-1</code> = "كل حاجة غير الأخير"، <code>-1</code> = "الأخير بس".</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 3</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">What's the difference between <code>iloc</code> and <code>loc</code>?<em>إيه الفرق بين <code>iloc</code> و<code>loc</code>؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en"><code>iloc</code> = <strong>integer</strong> location (by number: 0, 1, 2…). <code>loc</code> = <strong>label</strong> location (by column name: 'Age', 'Country'…). Example: <code>df.loc[:, 'Age']</code> vs <code>df.iloc[:, 1]</code> — both get the Age column, but one uses the name and the other uses the position number.</div>
+            <div class="qa-ans-ar"><code>iloc</code> = اختيار بالـ <strong>رقم</strong> (0, 1, 2…). <code>loc</code> = اختيار بالـ <strong>اسم</strong> (مثل 'Age', 'Country'). مثال: <code>df.loc[:, 'Age']</code> مقابل <code>df.iloc[:, 1]</code> — الاتنين بيجيبوا عمود Age، لكن واحد بالاسم والتاني بالرقم.</div>
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Why use uppercase X and lowercase y?<em>ليه X كبيرة وy صغيرة؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">This is a <strong>mathematical convention</strong> from linear algebra. X is uppercase because it's a <strong>matrix</strong> (2D — rows × columns). y is lowercase because it's a <strong>vector</strong> (1D — just one column). In math: matrices are uppercase, vectors are lowercase. sklearn enforces this convention too.</div>
+            <div class="qa-ans-ar">ده <strong>اتفاقية رياضية</strong> من الجبر الخطي. X كبيرة لأنها <strong>مصفوفة</strong> (ثنائية الأبعاد — صفوف × أعمدة). y صغيرة لأنها <strong>متجه</strong> (أحادي البعد — عمود واحد). في الرياضيات: المصفوفات بالحرف الكبير والمتجهات بالصغير. sklearn بيتبع نفس الاتفاقية.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-divider"></div>
+
+    <!-- ══ PHASE 4 ══ -->
+    <div class="phase-section" id="phase4">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(255,107,53,0.1);color:var(--phase4);border:2px solid rgba(255,107,53,0.3);">04</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Handling Missing Data</div>
+          <div class="phase-title-ar">معالجة البيانات الناقصة</div>
+          <span class="phase-tag" style="background:rgba(255,107,53,0.1);color:var(--phase4);">Imputation</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [21]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="kw">from</span> <span class="cls">sklearn.impute</span> <span class="kw">import</span> <span class="cls">SimpleImputer</span>
+<span class="line-num">2</span><span class="var">imputer</span> <span class="op">=</span> <span class="cls">SimpleImputer</span>(<span class="param">missing_values</span><span class="op">=</span><span class="var">np</span>.<span class="var">nan</span>, <span class="param">strategy</span><span class="op">=</span><span class="str">'mean'</span>)
+<span class="line-num">3</span><span class="var">imputer</span>.<span class="fn">fit</span>(<span class="var">X</span>.<span class="fn">iloc</span>[:, <span class="num">1</span>:<span class="num">3</span>])       <span class="cmt"># Learn the mean of Age & Salary</span>
+<span class="line-num">4</span><span class="var">X</span>.<span class="fn">iloc</span>[:, <span class="num">1</span>:<span class="num">3</span>] <span class="op">=</span> <span class="var">imputer</span>.<span class="fn">transform</span>(<span class="var">X</span>.<span class="fn">iloc</span>[:, <span class="num">1</span>:<span class="num">3</span>])  <span class="cmt"># Replace NaN with mean</span></pre>
+      </div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text"><code>SimpleImputer</code> fills in missing values. With <code>strategy='mean'</code> it calculates the average of each column and fills every NaN with that average. <code>.fit()</code> <em>learns</em> the statistics (calculates the mean). <code>.transform()</code> <em>applies</em> that learning to actually replace the NaNs. We only apply it to columns 1 and 2 (Age, Salary) — NOT column 0 (Country) because it's text, not numeric.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text"><code>SimpleImputer</code> بيملي القيم الناقصة. مع <code>strategy='mean'</code> بيحسب المتوسط لكل عمود ويملي كل NaN بالمتوسط. <code>.fit()</code> <em>بيتعلم</em> الإحصائيات (بيحسب المتوسط). <code>.transform()</code> <em>بيطبق</em> اللي اتعلمه ويبدل الـ NaN فعلاً. بنطبقه على الأعمدة 1 و2 (Age, Salary) بس — مش على 0 (Country) لأنه نص مش أرقام.</div>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <div class="annotation-title">🔍 fit vs transform · الفرق بين fit و transform</div>
+        <div class="annotation-row">
+          <span class="ann-code">imputer.fit(data)</span>
+          <div class="ann-desc">
+            <div class="ann-en"><strong>Learning phase</strong> — computes and memorizes the mean of each column. No changes to data yet.</div>
+            <div class="ann-ar"><strong>مرحلة التعلم</strong> — بيحسب ويحفظ متوسط كل عمود. مش بيغير في الداتا بعد.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">imputer.transform(data)</span>
+          <div class="ann-desc">
+            <div class="ann-en"><strong>Applying phase</strong> — uses the memorized mean to replace all NaN values. Returns transformed data.</div>
+            <div class="ann-ar"><strong>مرحلة التطبيق</strong> — بيستخدم المتوسط المحفوظ يبدل كل NaN. بيرجع الداتا بعد التحويل.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">X.iloc[:, 1:3]</span>
+          <div class="ann-desc">
+            <div class="ann-en">Selects columns at positions 1 and 2 (Age and Salary). NOT column 0 (Country = text).</div>
+            <div class="ann-ar">بيختار الأعمدة في المكان 1 و2 (Age و Salary). مش 0 (Country = نص).</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">strategy='mean'</span>
+          <div class="ann-desc">
+            <div class="ann-en">Other options: <code>'median'</code> (middle value), <code>'most_frequent'</code> (mode), <code>'constant'</code> (fixed value).</div>
+            <div class="ann-ar">خيارات تانية: <code>'median'</code> (الوسيط)، <code>'most_frequent'</code> (المنوال)، <code>'constant'</code> (قيمة ثابتة).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">Memory Tip · تلميح للحفظ</div>
+          <div class="tip-en"><strong>fit = learn, transform = apply</strong>. Like a student: <code>fit()</code> is studying for the exam (learning the rules). <code>transform()</code> is actually taking the exam (applying what was learned). You always fit FIRST, then transform.</div>
+          <div class="tip-ar"><strong>fit = تعلّم، transform = طبّق</strong>. زي طالب: <code>fit()</code> هو المذاكرة (تعلم القواعد). <code>transform()</code> هو الامتحان (تطبيق اللي اتعلمه). دايماً fit الأول، بعدين transform.</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 4</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Why not just delete rows with missing data?<em>ليه مبنمسحش الصفوف اللي فيها NaN؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">Because <strong>data is precious</strong>. In real-world datasets, you might only have 100 rows. Deleting rows with missing values could remove 30-40% of your data. Imputation (filling in reasonable estimates) preserves your data volume while handling the missing values. Deletion is only acceptable when you have massive amounts of data and very few missing values.</div>
+            <div class="qa-ans-ar">لأن <strong>البيانات ثمينة</strong>. في الواقع ممكن يكون عندك 100 صف بس. مسح الصفوف الناقصة ممكن يشيل 30-40% من بياناتك. الـ Imputation (تعبئة تقديرات معقولة) بيحافظ على حجم بياناتك مع معالجة النقص. المسح مقبول بس لو عندك بيانات ضخمة جداً وقيم ناقصة قليلة جداً.</div>
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">When should we use median instead of mean?<em>امتى نستخدم median بدل mean؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">Use <strong>median</strong> when your data has <strong>outliers</strong> (extreme values). For example: salaries — if most people earn 50K but one person earns 5 million, the mean gets distorted. The median is more <strong>robust</strong> to outliers. Use mean when data is normally distributed without extreme values.</div>
+            <div class="qa-ans-ar">استخدم <strong>median</strong> لما في <strong>outliers</strong> (قيم طرفية شاذة). مثلاً: الرواتب — لو معظم الناس بتاخد 50K بس واحد بياخد 5 مليون، الـ mean بيتشوه. الـ median أكثر <strong>مقاومة</strong> للشواذ. استخدم mean لما البيانات موزعة طبيعياً من غير قيم شاذة.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-divider"></div>
+
+    <!-- ══ PHASE 5 ══ -->
+    <div class="phase-section" id="phase5">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(255,209,102,0.1);color:var(--phase5);border:2px solid rgba(255,209,102,0.3);">05</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Encoding Independent Variable (OneHotEncoder)</div>
+          <div class="phase-title-ar">ترميز المتغير المستقل - OneHotEncoder</div>
+          <span class="phase-tag" style="background:rgba(255,209,102,0.1);color:var(--phase5);">Categorical → Numeric</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [22]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="kw">from</span> <span class="cls">sklearn.compose</span> <span class="kw">import</span> <span class="cls">ColumnTransformer</span>
+<span class="line-num">2</span><span class="kw">from</span> <span class="cls">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cls">OneHotEncoder</span>
+<span class="line-num">3</span><span class="var">ct</span> <span class="op">=</span> <span class="cls">ColumnTransformer</span>(<span class="param">transformers</span><span class="op">=</span>[(<span class="str">'encoder'</span>, <span class="cls">OneHotEncoder</span>(), [<span class="num">0</span>])], <span class="param">remainder</span><span class="op">=</span><span class="str">'passthrough'</span>)
+<span class="line-num">4</span><span class="var">X</span> <span class="op">=</span> <span class="var">np</span>.<span class="fn">array</span>(<span class="var">ct</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>))</pre>
+      </div>
+
+      <div class="output-preview">
+        <div class="output-label">Output — After OneHotEncoding (Country becomes 3 binary columns)</div>
+France=1 | Spain=0 | Germany=0 | Age  | Salary
+[1, 0, 0, 44.0, 72000.0]   ← France
+[0, 0, 1, 27.0, 48000.0]   ← Spain
+[0, 1, 0, 30.0, 54000.0]   ← Germany</div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text">ML algorithms need numbers, not text. <strong>OneHotEncoder</strong> converts the Country column (France/Spain/Germany) into 3 new binary columns — one per category. A row gets <code>1</code> in its country's column and <code>0</code> in the others. <code>ColumnTransformer</code> applies the encoder only to column 0 (Country) and passes all other columns through unchanged (<code>remainder='passthrough'</code>). Then we convert to a NumPy array.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text">خوارزميات الـ ML محتاجة أرقام مش نصوص. <strong>OneHotEncoder</strong> بيحول عمود Country (France/Spain/Germany) لـ 3 أعمدة ثنائية — عمود لكل فئة. الصف بياخد <code>1</code> في عمود بلده و<code>0</code> في الباقي. <code>ColumnTransformer</code> بيطبق الـ encoder على العمود 0 (Country) بس ويعدي الأعمدة التانية من غير تغيير (<code>remainder='passthrough'</code>). بعدين بنحوله لـ NumPy array.</div>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <div class="annotation-title">🔍 Why OneHot? Not just 1, 2, 3? · ليه OneHot؟</div>
+        <div class="annotation-row">
+          <span class="ann-code">The Problem</span>
+          <div class="ann-desc">
+            <div class="ann-en">If you encode France=1, Spain=2, Germany=3, the model thinks Germany (3) is "3x more" than France (1) — a false mathematical relationship that doesn't exist.</div>
+            <div class="ann-ar">لو رمزت France=1, Spain=2, Germany=3، النموذج هيفتكر Germany (3) "3 مرات أكبر" من France (1) — علاقة رياضية وهمية مش موجودة.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">The Solution</span>
+          <div class="ann-desc">
+            <div class="ann-en">OneHot creates equal binary columns — no category is "bigger" than another. France = [1,0,0], Spain = [0,0,1], Germany = [0,1,0].</div>
+            <div class="ann-ar">OneHot بيعمل أعمدة ثنائية متساوية — مفيش فئة "أكبر" من التانية. France = [1,0,0], Spain = [0,0,1], Germany = [0,1,0].</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">remainder='passthrough'</span>
+          <div class="ann-desc">
+            <div class="ann-en">Keeps all OTHER columns (Age, Salary) unchanged while only transforming column 0.</div>
+            <div class="ann-ar">بيحتفظ بالأعمدة التانية (Age, Salary) من غير تغيير بينما بيحول العمود 0 بس.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">np.array(ct.fit_transform(X))</span>
+          <div class="ann-desc">
+            <div class="ann-en">The result of fit_transform is a sparse matrix — we convert it to a regular NumPy array for sklearn compatibility.</div>
+            <div class="ann-ar">ناتج fit_transform مصفوفة متفرقة — بنحولها لـ NumPy array عادي عشان تتوافق مع sklearn.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">Memory Tip · تلميح للحفظ</div>
+          <div class="tip-en">Think of OneHotEncoder like a <strong>team jersey system</strong>: France wears jersey [1,0,0], Spain wears [0,0,1], Germany wears [0,1,0]. Each team has ONE "1" and all others are "0". No team is "better" by number — they're just different.</div>
+          <div class="tip-ar">فكر في OneHotEncoder زي <strong>نظام قمصان الفرق</strong>: France لابسة [1,0,0]، Spain لابسة [0,0,1]، Germany لابسة [0,1,0]. كل فريق عنده "1" واحدة والباقي أصفار. مفيش فريق "أحسن" بالرقم — هم مختلفين بس.</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 5</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">What is fit_transform and how does it differ from fit + transform separately?<em>إيه هو fit_transform وإزاي يختلف عن fit و transform منفصلين؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en"><code>fit_transform(X)</code> = <code>fit(X)</code> + <code>transform(X)</code> combined in one step. It's a shortcut that both learns from the data AND applies the transformation at once. You'd use them separately when you want to fit on training data but transform both training AND test data separately — which is exactly what we do in Feature Scaling (Phase 8).</div>
+            <div class="qa-ans-ar"><code>fit_transform(X)</code> = <code>fit(X)</code> + <code>transform(X)</code> في خطوة واحدة. اختصار بيتعلم ويطبق في آن واحد. تستخدمهم منفصلين لما تريد تتعلم على بيانات التدريب بس تطبق على التدريب والاختبار منفصلين — وده بالضبط اللي بنعمله في الـ Feature Scaling (Phase 8).</div>
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Why is column 0 specified as [0] in ColumnTransformer?<em>ليه بنحدد [0] في ColumnTransformer؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en"><code>[0]</code> is a list telling ColumnTransformer "apply OneHotEncoder to column at index 0 (Country)". You can pass multiple column indices like <code>[0, 2]</code> to encode multiple columns. The list format is important — it tells the transformer exactly which columns to process.</div>
+            <div class="qa-ans-ar"><code>[0]</code> قايمة بتقول لـ ColumnTransformer "طبق OneHotEncoder على العمود اللي في المكان 0 (Country)". ممكن تعدي أكتر من عمود زي <code>[0, 2]</code> ترمز أعمدة متعددة. صيغة القايمة مهمة — بتقول للمحول بالضبط أي أعمدة يشتغل عليها.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-divider"></div>
+
+    <!-- ══ PHASE 6 ══ -->
+    <div class="phase-section" id="phase6">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(255,77,109,0.1);color:var(--phase6);border:2px solid rgba(255,77,109,0.3);">06</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Encoding Dependent Variable (LabelEncoder)</div>
+          <div class="phase-title-ar">ترميز المتغير التابع - LabelEncoder</div>
+          <span class="phase-tag" style="background:rgba(255,77,109,0.1);color:var(--phase6);">Binary Encoding</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [24–25]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="kw">from</span> <span class="cls">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cls">LabelEncoder</span>
+<span class="line-num">2</span><span class="var">le</span> <span class="op">=</span> <span class="cls">LabelEncoder</span>()
+<span class="line-num">3</span><span class="var">y</span> <span class="op">=</span> <span class="var">le</span>.<span class="fn">fit_transform</span>(<span class="var">y</span>)
+<span class="line-num">4</span>
+<span class="line-num">5</span><span class="cmt"># Output: array([0, 1, 0, 0, 1, 1, 0, 1, 0, 1])</span>
+<span class="line-num">6</span><span class="cmt"># No → 0, Yes → 1</span></pre>
+      </div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text"><code>LabelEncoder</code> converts text labels into integers alphabetically. "No" → 0, "Yes" → 1. This is simpler than OneHotEncoder because y (the target) is a <strong>single column</strong> with only 2 values — we don't need dummy variables. The model output will be 0 or 1, which maps directly back to No/Yes.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text"><code>LabelEncoder</code> بيحول النصوص لأرقام ترتيبياً (أبجدياً). "No" → 0, "Yes" → 1. ده أبسط من OneHotEncoder لأن y (المخرج) <strong>عمود واحد</strong> بس بقيمتين — مش محتاجين dummy variables. الناتج هيكون 0 أو 1 اللي بيرجع لـ No/Yes مباشرةً.</div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">OneHot vs Label — When to use which? · امتى أستخدم إيه؟</div>
+          <div class="tip-en"><strong>LabelEncoder for y</strong> (target): because it's only 1 column and order doesn't create false relationships in output. <strong>OneHotEncoder for X</strong> (features): because multiple columns mean false ordering would confuse the model. Rule: "If it's the answer column, Label. If it's an input column, OneHot."</div>
+          <div class="tip-ar"><strong>LabelEncoder لـ y</strong> (الهدف): لأنه عمود واحد بس والترتيب مش بيخلق علاقات وهمية في الناتج. <strong>OneHotEncoder لـ X</strong> (المدخلات): لأن أعمدة متعددة والترتيب يخلي النموذج يتوه. القاعدة: "لو عمود الإجابة → Label. لو عمود مدخل → OneHot."</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 6</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">What if y had 3 categories (No, Maybe, Yes) — would LabelEncoder still work?<em>لو y كان فيها 3 فئات — هل LabelEncoder كان هيشتغل؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">Yes, LabelEncoder still works for 3+ categories (No=0, Maybe=1, Yes=2). But whether it's <em>appropriate</em> depends on the problem. For <strong>ordinal</strong> targets (where order matters: Low &lt; Medium &lt; High), it's fine. For <strong>nominal</strong> targets (where order doesn't matter), you'd need a different approach (like multi-class with separate handling).</div>
+            <div class="qa-ans-ar">أيوه LabelEncoder هيشتغل مع 3+ فئات (No=0, Maybe=1, Yes=2). لكن هل ده <em>مناسب</em> بيعتمد على المشكلة. لـ <strong>ordinal</strong> targets (الترتيب مهم: Low &lt; Medium &lt; High) → تمام. لـ <strong>nominal</strong> targets (الترتيب مش مهم) → محتاج تعالج بطريقة تانية.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-divider"></div>
+
+    <!-- ══ PHASE 7 ══ -->
+    <div class="phase-section" id="phase7">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(6,182,212,0.1);color:var(--phase7);border:2px solid rgba(6,182,212,0.3);">07</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Splitting into Training &amp; Test Sets</div>
+          <div class="phase-title-ar">تقسيم بيانات التدريب والاختبار</div>
+          <span class="phase-tag" style="background:rgba(6,182,212,0.1);color:var(--phase7);">80% Train / 20% Test</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [26]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="kw">from</span> <span class="cls">sklearn.model_selection</span> <span class="kw">import</span> <span class="cls">train_test_split</span>
+<span class="line-num">2</span><span class="var">X_train</span>, <span class="var">X_test</span>, <span class="var">y_train</span>, <span class="var">y_test</span> <span class="op">=</span> <span class="fn">train_test_split</span>(
+<span class="line-num">3</span>    <span class="var">X</span>, <span class="var">y</span>,
+<span class="line-num">4</span>    <span class="param">test_size</span><span class="op">=</span><span class="num">0.2</span>,        <span class="cmt"># 20% for testing, 80% for training</span>
+<span class="line-num">5</span>    <span class="param">random_state</span><span class="op">=</span><span class="num">1</span>        <span class="cmt"># seed for reproducibility</span>
+<span class="line-num">6</span>)</pre>
+      </div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text">We split data into <strong>4 variables</strong>: X_train (80% of features for training), X_test (20% of features for evaluation), y_train (80% of labels for training), y_test (20% of labels for evaluation). <code>random_state=1</code> makes the split reproducible — same seed = same split every time. <code>test_size=0.2</code> = 20% test, 80% train.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text">بنقسم البيانات لـ <strong>4 متغيرات</strong>: X_train (80% من المدخلات للتدريب)، X_test (20% للتقييم)، y_train (80% من الإجابات للتدريب)، y_test (20% للتقييم). <code>random_state=1</code> بيخلي التقسيم ثابت — نفس الـ seed = نفس التقسيم في كل مرة. <code>test_size=0.2</code> = 20% اختبار، 80% تدريب.</div>
+        </div>
+      </div>
+
+      <div class="annotations">
+        <div class="annotation-title">🔍 Why Split? · ليه بنقسم؟</div>
+        <div class="annotation-row">
+          <span class="ann-code">Train Set (80%)</span>
+          <div class="ann-desc">
+            <div class="ann-en">The model learns from this data. It sees the questions AND the answers during training.</div>
+            <div class="ann-ar">النموذج بيتعلم من البيانات دي. بيشوف الأسئلة والإجابات أثناء التدريب.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">Test Set (20%)</span>
+          <div class="ann-desc">
+            <div class="ann-en">The model has NEVER seen this data. We use it to see how well the model generalizes to new, unseen data.</div>
+            <div class="ann-ar">النموذج <strong>ماشافش</strong> البيانات دي قبل كده. بنستخدمها نشوف إزاي النموذج بيتعامل مع بيانات جديدة.</div>
+          </div>
+        </div>
+        <div class="annotation-row">
+          <span class="ann-code">random_state=1</span>
+          <div class="ann-desc">
+            <div class="ann-en">Sets the random seed so the split is reproducible. Without it, every run gives a different split. Use any integer consistently.</div>
+            <div class="ann-ar">بيحدد الـ random seed عشان التقسيم يفضل ثابت. من غيره كل تشغيل بيدي تقسيم مختلف. استخدم أي رقم صحيح باستمرار.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">Memory Tip · تلميح للحفظ</div>
+          <div class="tip-en">Think of it like <strong>studying vs exam</strong>. Train = studying with the textbook (model sees answers). Test = closed-book exam (model sees only questions). If you tested on the same data you trained on, it's like giving students the answers before the exam — meaningless!</div>
+          <div class="tip-ar">فكر فيه زي <strong>المذاكرة مقابل الامتحان</strong>. Train = المذاكرة بالكتاب (النموذج يشوف الإجابات). Test = امتحان مغلق (النموذج يشوف الأسئلة بس). لو اختبرت على نفس بيانات التدريب، زي ما تدي الطلبة الإجابات قبل الامتحان — مفيش فايدة!</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 7</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Why should we split BEFORE feature scaling, not after?<em>ليه بنقسم قبل الـ Feature Scaling مش بعدها؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">This is critical! If you scale ALL data first then split, the scaler has "seen" the test data — it used test data statistics (mean, std) to scale the training data. This is called <strong>data leakage</strong>. Correct order: Split → fit scaler on train only → transform train → transform test separately.</div>
+            <div class="qa-ans-ar">ده مهم جداً! لو عملت Scale على كل البيانات الأول بعدين قسمت، الـ scaler "شاف" بيانات الاختبار — استخدم إحصائياتها (متوسط، انحراف معياري) لتحجيم بيانات التدريب. ده اسمه <strong>data leakage</strong>. الترتيب الصح: قسّم → فيت الـ scaler على التدريب بس → حول التدريب → حول الاختبار منفصلاً.</div>
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Can the split ratio be different from 80/20?<em>ممكن نغير نسبة التقسيم من 80/20؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en">Yes! Common splits: 80/20 (most popular), 70/30 (if you have less data), 90/10 (if you have lots of data). The rule: <strong>more training data</strong> = better model learning. <strong>more test data</strong> = more reliable evaluation. With very small datasets (&lt;100 rows), consider using <strong>k-fold cross validation</strong> instead of a fixed split.</div>
+            <div class="qa-ans-ar">أيوه! التقسيمات الشائعة: 80/20 (الأكثر شيوعاً)، 70/30 (لو عندك بيانات أقل)، 90/10 (لو عندك بيانات كتير). القاعدة: <strong>أكتر بيانات تدريب</strong> = أفضل تعلم للنموذج. <strong>أكتر بيانات اختبار</strong> = تقييم أكثر موثوقية. مع بيانات صغيرة جداً (&lt;100 صف)، فكر في <strong>k-fold cross validation</strong> بدل التقسيم الثابت.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase-divider"></div>
+
+    <!-- ══ PHASE 8 ══ -->
+    <div class="phase-section" id="phase8">
+      <div class="phase-header">
+        <div class="phase-number" style="background:rgba(139,92,246,0.1);color:var(--phase8);border:2px solid rgba(139,92,246,0.3);">08</div>
+        <div class="phase-titles">
+          <div class="phase-title-en">Feature Scaling (StandardScaler)</div>
+          <div class="phase-title-ar">تحجيم الميزات - StandardScaler</div>
+          <span class="phase-tag" style="background:rgba(139,92,246,0.1);color:var(--phase8);">Normalization</span>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+          <span class="code-lang">Python · In [31]</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre class="code-body"><span class="line-num">1</span><span class="kw">from</span> <span class="cls">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cls">StandardScaler</span>
+<span class="line-num">2</span><span class="var">sc</span> <span class="op">=</span> <span class="cls">StandardScaler</span>()
+<span class="line-num">3</span><span class="var">X_train</span>[:, <span class="num">3</span>:] <span class="op">=</span> <span class="var">sc</span>.<span class="fn">fit_transform</span>(<span class="var">X_train</span>[:, <span class="num">3</span>:])  <span class="cmt"># fit AND transform train</span>
+<span class="line-num">4</span><span class="var">X_test</span>[:, <span class="num">3</span>:] <span class="op">=</span> <span class="var">sc</span>.<span class="fn">transform</span>(<span class="var">X_test</span>[:, <span class="num">3</span>:])       <span class="cmt"># ONLY transform test (no fit!)</span></pre>
+      </div>
+
+      <div class="output-preview">
+        <div class="output-label">Output — X_train after Scaling (Age & Salary normalized to ~-2 to +2)</div>
+[0, 0, 1, -0.19159184, -1.07812594]
+[0, 1, 0, -0.01411729, -0.07013168]
+[1, 0, 0,  0.56670851,  0.63356243]
+...
+OneHot cols unchanged ↑  | Scaled cols ↑</div>
+
+      <div class="explanation-grid">
+        <div class="card card-en">
+          <div class="card-label">🇬🇧 English Explanation</div>
+          <div class="card-text"><strong>StandardScaler</strong> transforms values so they have mean=0 and standard deviation=1. Formula: z = (x - mean) / std. Without scaling, a model would think Salary (72000) is way more important than Age (44) just because of its larger number. Critical rule: <code>fit_transform</code> on training data, but only <code>transform</code> on test data — because the scaler must learn only from training data to avoid data leakage. Columns 0-2 are already OneHot binary (0 or 1) so no scaling needed — only columns 3+ (Age, Salary) need it.</div>
+        </div>
+        <div class="card card-ar">
+          <div class="card-label">🇪🇬 الشرح بالعربي</div>
+          <div class="card-text"><strong>StandardScaler</strong> بيحول القيم عشان يبقى متوسطها 0 وانحرافها المعياري 1. المعادلة: z = (x - mean) / std. من غير scaling، النموذج هيفتكر Salary (72000) أهم من Age (44) بسبب الرقم الأكبر بس! القاعدة المهمة: <code>fit_transform</code> على بيانات التدريب، بس <code>transform</code> بس على الاختبار — لأن الـ scaler لازم يتعلم من التدريب بس عشان يمنع data leakage. الأعمدة 0-2 OneHot ثنائية (0 أو 1) ومحتاجش scaling — الأعمدة 3+ (Age, Salary) بس محتاجاها.</div>
+        </div>
+      </div>
+
+      <div class="memory-tip">
+        <div class="tip-icon">🧠</div>
+        <div class="tip-content">
+          <div class="tip-title">The Golden Rule of Scaling · القاعدة الذهبية للتحجيم</div>
+          <div class="tip-en"><strong>fit_transform</strong> on TRAIN. <strong>transform</strong> only on TEST. Never fit on test data. Think: the scaler is a student who studied (fit on train), then takes both the practice exam (transform train) and the real exam (transform test) using what it already learned — it doesn't study again during the real exam.</div>
+          <div class="tip-ar"><strong>fit_transform</strong> على التدريب. <strong>transform</strong> بس على الاختبار. أبداً متعملش fit على الاختبار. فكر: الـ scaler طالب ذاكر (fit على التدريب)، بعدين عمل امتحان تجريبي (transform train) وامتحان حقيقي (transform test) بنفس اللي اتعلمه — مش بيذاكر تاني في الامتحان الحقيقي.</div>
+        </div>
+      </div>
+
+      <div class="qa-section">
+        <div class="qa-title">❓ Q&amp;A — Phase 8</div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">Do ALL ML algorithms need feature scaling?<em>كل خوارزميات الـ ML محتاجة feature scaling؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en"><strong>No!</strong> Distance-based algorithms NEED scaling: KNN, SVR, Neural Networks, PCA, Logistic Regression. Tree-based algorithms DON'T need it: Decision Trees, Random Forests, XGBoost — because they split by thresholds, not distances, so scale doesn't matter.</div>
+            <div class="qa-ans-ar"><strong>لأ!</strong> الخوارزميات القائمة على المسافة محتاجة scaling: KNN, SVR, Neural Networks, PCA, Logistic Regression. الخوارزميات القائمة على الشجرة <strong>مش</strong> محتاجاها: Decision Trees, Random Forests, XGBoost — لأنها بتقسم بالعتبات مش المسافات، فالحجم مش مهم.</div>
+          </div>
+        </div>
+        <div class="qa-item">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-text">What's the difference between StandardScaler and MinMaxScaler?<em>إيه الفرق بين StandardScaler وMinMaxScaler؟</em></div>
+            <span class="qa-arrow">▼</span>
+          </div>
+          <div class="qa-answer">
+            <div class="qa-ans-en"><strong>StandardScaler</strong>: z = (x-mean)/std → output range is unbounded (could be -3 to +3 or more), centers around 0. Best when data is normally distributed. <strong>MinMaxScaler</strong>: maps values to [0, 1] range → x_scaled = (x - min) / (max - min). Best for bounded data without outliers. StandardScaler is more robust to outliers.</div>
+            <div class="qa-ans-ar"><strong>StandardScaler</strong>: z = (x-mean)/std → النطاق غير محدود (ممكن -3 لـ +3 أو أكثر)، مركزه 0. الأفضل لما البيانات موزعة طبيعياً. <strong>MinMaxScaler</strong>: بيحول القيم لنطاق [0, 1] → x_scaled = (x - min) / (max - min). الأفضل للبيانات المحدودة من غير outliers. StandardScaler أكثر مقاومة للشواذ.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════ AI TIPS PAGE ══════════════════ -->
+    <div class="ai-section" id="ai-tips">
+      <div class="ai-hero">
+        <div class="ai-badge">🤖 AI Tips Page · نصائح الذكاء الاصطناعي</div>
+        <h2>Next Steps & Deep Dives
+          <span>الخطوات التالية والفهم العميق</span>
+        </h2>
+        <p>You've mastered the preprocessing pipeline. Here are AI-recommended code blocks to try, deep understanding questions to wrestle with, and memory tricks to lock it all in.</p>
+      </div>
+
+      <!-- TIP BLOCK 1 -->
+      <div class="tip-block">
+        <div class="tip-block-header">
+          <div class="tip-block-icon" style="background:rgba(0,229,255,0.1);">🔍</div>
+          <div>
+            <div class="tip-block-title">Explore Before You Preprocess</div>
+            <div class="tip-block-subtitle">استكشف البيانات قبل ما تعالجها</div>
+          </div>
+        </div>
+        <div class="tip-block-body">
+          <div class="tip-block-desc">Always run these commands on any new dataset BEFORE any preprocessing. This tells you exactly what you're dealing with.</div>
+          <div class="tip-block-ar">دايماً شغّل الأوامر دي على أي داتاسيت جديد قبل أي معالجة. هيقولك بالظبط بتتعامل مع إيه.</div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+              <span class="code-lang">Try This! · جرب ده!</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre class="code-body"><span class="cmt"># 1. Quick overview of your data</span>
+<span class="var">df</span>.<span class="fn">info</span>()          <span class="cmt"># dtypes, nulls, shape</span>
+<span class="var">df</span>.<span class="fn">describe</span>()      <span class="cmt"># stats: mean, std, min, max</span>
+<span class="var">df</span>.<span class="fn">isnull</span>().<span class="fn">sum</span>()   <span class="cmt"># count nulls per column</span>
+
+<span class="cmt"># 2. Visualize missing data</span>
+<span class="kw">import</span> <span class="cls">seaborn</span> <span class="kw">as</span> <span class="var">sns</span>
+<span class="var">sns</span>.<span class="fn">heatmap</span>(<span class="var">df</span>.<span class="fn">isnull</span>(), <span class="param">cbar</span><span class="op">=</span><span class="kw">False</span>, <span class="param">cmap</span><span class="op">=</span><span class="str">'viridis'</span>)
+
+<span class="cmt"># 3. Check class balance (how many Yes vs No?)</span>
+<span class="var">df</span>[<span class="str">'Purchased'</span>].<span class="fn">value_counts</span>()
+<span class="var">df</span>[<span class="str">'Purchased'</span>].<span class="fn">value_counts</span>(<span class="param">normalize</span><span class="op">=</span><span class="kw">True</span>)  <span class="cmt"># as percentages</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIP BLOCK 2 -->
+      <div class="tip-block">
+        <div class="tip-block-header">
+          <div class="tip-block-icon" style="background:rgba(0,255,136,0.1);">🔗</div>
+          <div>
+            <div class="tip-block-title">Build a Preprocessing Pipeline</div>
+            <div class="tip-block-subtitle">ابني Pipeline للمعالجة</div>
+          </div>
+        </div>
+        <div class="tip-block-body">
+          <div class="tip-block-desc">Professional ML engineers never do steps manually. They chain everything into a <code>Pipeline</code> that applies all steps automatically in the right order. This prevents bugs and data leakage.</div>
+          <div class="tip-block-ar">مهندسو الـ ML الاحترافيون مش بيعملوا الخطوات يدوياً. بيجمعوا كل حاجة في <code>Pipeline</code> بيطبق كل الخطوات أوتوماتيك بالترتيب الصح. ده بيمنع الأخطاء وdata leakage.</div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+              <span class="code-lang">Next Level · المستوى التالي</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre class="code-body"><span class="kw">from</span> <span class="cls">sklearn.pipeline</span> <span class="kw">import</span> <span class="cls">Pipeline</span>
+<span class="kw">from</span> <span class="cls">sklearn.compose</span> <span class="kw">import</span> <span class="cls">ColumnTransformer</span>
+<span class="kw">from</span> <span class="cls">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cls">StandardScaler</span>, <span class="cls">OneHotEncoder</span>
+<span class="kw">from</span> <span class="cls">sklearn.impute</span> <span class="kw">import</span> <span class="cls">SimpleImputer</span>
+
+<span class="cmt"># Define which columns are numeric and which are categorical</span>
+<span class="var">numeric_features</span> <span class="op">=</span> [<span class="str">'Age'</span>, <span class="str">'Salary'</span>]
+<span class="var">categorical_features</span> <span class="op">=</span> [<span class="str">'Country'</span>]
+
+<span class="cmt"># Build sub-pipelines for each type</span>
+<span class="var">numeric_transformer</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'imputer'</span>, <span class="cls">SimpleImputer</span>(<span class="param">strategy</span><span class="op">=</span><span class="str">'mean'</span>)),
+    (<span class="str">'scaler'</span>, <span class="cls">StandardScaler</span>())
+])
+
+<span class="var">categorical_transformer</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'encoder'</span>, <span class="cls">OneHotEncoder</span>())
+])
+
+<span class="cmt"># Combine both into a ColumnTransformer</span>
+<span class="var">preprocessor</span> <span class="op">=</span> <span class="cls">ColumnTransformer</span>([
+    (<span class="str">'num'</span>, <span class="var">numeric_transformer</span>, <span class="var">numeric_features</span>),
+    (<span class="str">'cat'</span>, <span class="var">categorical_transformer</span>, <span class="var">categorical_features</span>)
+])
+
+<span class="cmt"># Apply to your train/test data</span>
+<span class="var">X_train_processed</span> <span class="op">=</span> <span class="var">preprocessor</span>.<span class="fn">fit_transform</span>(<span class="var">X_train</span>)
+<span class="var">X_test_processed</span> <span class="op">=</span> <span class="var">preprocessor</span>.<span class="fn">transform</span>(<span class="var">X_test</span>)</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIP BLOCK 3 -->
+      <div class="tip-block">
+        <div class="tip-block-header">
+          <div class="tip-block-icon" style="background:rgba(168,85,247,0.1);">🎭</div>
+          <div>
+            <div class="tip-block-title">Handle Outliers Before Scaling</div>
+            <div class="tip-block-subtitle">تعامل مع الشواذ قبل التحجيم</div>
+          </div>
+        </div>
+        <div class="tip-block-body">
+          <div class="tip-block-desc">Outliers can ruin your scaling and model accuracy. Use these techniques to detect and handle them before any other preprocessing.</div>
+          <div class="tip-block-ar">الـ outliers ممكن تخرب الـ scaling ودقة نموذجك. استخدم التقنيات دي تكتشفها وتتعامل معها قبل أي معالجة تانية.</div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+              <span class="code-lang">Pro Tip · نصيحة احترافية</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre class="code-body"><span class="cmt"># Method 1: IQR (Interquartile Range)</span>
+<span class="var">Q1</span> <span class="op">=</span> <span class="var">df</span>[<span class="str">'Salary'</span>].<span class="fn">quantile</span>(<span class="num">0.25</span>)
+<span class="var">Q3</span> <span class="op">=</span> <span class="var">df</span>[<span class="str">'Salary'</span>].<span class="fn">quantile</span>(<span class="num">0.75</span>)
+<span class="var">IQR</span> <span class="op">=</span> <span class="var">Q3</span> <span class="op">-</span> <span class="var">Q1</span>
+<span class="var">lower</span> <span class="op">=</span> <span class="var">Q1</span> <span class="op">-</span> <span class="num">1.5</span> <span class="op">*</span> <span class="var">IQR</span>
+<span class="var">upper</span> <span class="op">=</span> <span class="var">Q3</span> <span class="op">+</span> <span class="num">1.5</span> <span class="op">*</span> <span class="var">IQR</span>
+
+<span class="cmt"># Flag outliers</span>
+<span class="var">df</span>[(<span class="var">df</span>[<span class="str">'Salary'</span>] <span class="op">&lt;</span> <span class="var">lower</span>) <span class="op">|</span> (<span class="var">df</span>[<span class="str">'Salary'</span>] <span class="op">&gt;</span> <span class="var">upper</span>)]
+
+<span class="cmt"># Method 2: Z-score (>3 standard deviations from mean)</span>
+<span class="kw">from</span> <span class="cls">scipy</span> <span class="kw">import</span> <span class="var">stats</span>
+<span class="var">z_scores</span> <span class="op">=</span> <span class="var">stats</span>.<span class="fn">zscore</span>(<span class="var">df</span>[[<span class="str">'Age'</span>, <span class="str">'Salary'</span>]])
+<span class="var">outliers</span> <span class="op">=</span> (<span class="var">np</span>.<span class="fn">abs</span>(<span class="var">z_scores</span>) <span class="op">&gt;</span> <span class="num">3</span>).<span class="fn">any</span>(<span class="param">axis</span><span class="op">=</span><span class="num">1</span>)
+<span class="var">df_clean</span> <span class="op">=</span> <span class="var">df</span>[<span class="op">~</span><span class="var">outliers</span>]  <span class="cmt"># Remove outliers</span>
+
+<span class="cmt"># Method 3: Use RobustScaler instead of StandardScaler</span>
+<span class="kw">from</span> <span class="cls">sklearn.preprocessing</span> <span class="kw">import</span> <span class="cls">RobustScaler</span>
+<span class="var">rs</span> <span class="op">=</span> <span class="cls">RobustScaler</span>()  <span class="cmt"># Uses median & IQR, not mean & std</span>
+<span class="var">X_train_robust</span> <span class="op">=</span> <span class="var">rs</span>.<span class="fn">fit_transform</span>(<span class="var">X_train</span>[:, <span class="num">3</span>:])</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIP BLOCK 4 -->
+      <div class="tip-block">
+        <div class="tip-block-header">
+          <div class="tip-block-icon" style="background:rgba(6,182,212,0.1);">📊</div>
+          <div>
+            <div class="tip-block-title">Visualize Before vs After Preprocessing</div>
+            <div class="tip-block-subtitle">تصوير قبل وبعد المعالجة</div>
+          </div>
+        </div>
+        <div class="tip-block-body">
+          <div class="tip-block-desc">Always visualize your data distributions before and after scaling. This confirms your preprocessing is working correctly.</div>
+          <div class="tip-block-ar">دايماً صوّر توزيعات بياناتك قبل وبعد الـ scaling. ده بيأكد إن معالجتك شغالة صح.</div>
+          <div class="code-block">
+            <div class="code-header">
+              <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+              <span class="code-lang">Visualize It · صوّرها</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre class="code-body"><span class="kw">import</span> <span class="cls">matplotlib.pyplot</span> <span class="kw">as</span> <span class="var">plt</span>
+
+<span class="var">fig</span>, <span class="var">axes</span> <span class="op">=</span> <span class="var">plt</span>.<span class="fn">subplots</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="param">figsize</span><span class="op">=</span>(<span class="num">12</span>, <span class="num">4</span>))
+
+<span class="cmt"># Before scaling</span>
+<span class="var">axes</span>[<span class="num">0</span>].<span class="fn">hist</span>(<span class="var">df</span>[<span class="str">'Salary'</span>], <span class="param">bins</span><span class="op">=</span><span class="num">20</span>, <span class="param">color</span><span class="op">=</span><span class="str">'#ff6b35'</span>)
+<span class="var">axes</span>[<span class="num">0</span>].<span class="fn">set_title</span>(<span class="str">'Salary - Before Scaling'</span>)
+
+<span class="cmt"># After scaling</span>
+<span class="var">axes</span>[<span class="num">1</span>].<span class="fn">hist</span>(<span class="var">X_train</span>[:, <span class="num">4</span>], <span class="param">bins</span><span class="op">=</span><span class="num">20</span>, <span class="param">color</span><span class="op">=</span><span class="str">'#00e5ff'</span>)
+<span class="var">axes</span>[<span class="num">1</span>].<span class="fn">set_title</span>(<span class="str">'Salary - After StandardScaler'</span>)
+
+<span class="var">plt</span>.<span class="fn">tight_layout</span>()
+<span class="var">plt</span>.<span class="fn">show</span>()
+
+<span class="cmt"># Confirm: mean should be ~0 and std ~1</span>
+<span class="nb">print</span>(<span class="str">f"Mean after scaling: {X_train[:, 4].mean():.4f}"</span>)  <span class="cmt"># ≈ 0</span>
+<span class="nb">print</span>(<span class="str">f"Std after scaling: {X_train[:, 4].std():.4f}"</span>)    <span class="cmt"># ≈ 1</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEEP UNDERSTANDING QUESTIONS -->
+      <div class="deep-q">
+        <div class="deep-q-header">
+          <div class="deep-q-title">🧩 Deep Understanding Questions — Answer These!
+            <span>أسئلة للفهم العميق — اجاوب عليها!</span>
+          </div>
+        </div>
+
+        <div class="deep-q-item">
+          <div class="dq-num">Question 01</div>
+          <div class="dq-text">If you have a dataset with 10,000 rows and only 5 missing values, which strategy would you use: imputation or deletion? Justify your answer.</div>
+          <div class="dq-text-ar">لو عندك داتاسيت بـ 10,000 صف وبس 5 قيم ناقصة، هتستخدم إيه: imputation ولا حذف؟ برر إجابتك.</div>
+          <button class="show-ans-btn" onclick="toggleDQ(this)">▶ Show Answer · شوف الإجابة</button>
+          <div class="dq-answer">
+            <div class="dq-ans-en">With 10,000 rows and only 5 missing values (0.05%), <strong>deletion is perfectly fine</strong> and actually preferred. You're losing only 5 rows, which is negligible. Imputation would introduce artificial data. The rule: if missing rate &lt;1-2%, deletion is safe. If missing rate is significant (5%+), use imputation to preserve data.</div>
+            <div class="dq-ans-ar">مع 10,000 صف وبس 5 قيم ناقصة (0.05%)، <strong>الحذف مناسب تماماً</strong> بل مفضل. بتخسر 5 صفوف بس وده مش مؤثر. الـ imputation هيضيف بيانات صناعية. القاعدة: لو نسبة النقص &lt;1-2%، الحذف آمن. لو النسبة كبيرة (5%+)، استخدم imputation.</div>
+          </div>
+        </div>
+
+        <div class="deep-q-item">
+          <div class="dq-num">Question 02</div>
+          <div class="dq-text">You're preprocessing a dataset with 50 columns: 5 categorical and 45 numerical. How would you structure your ColumnTransformer?</div>
+          <div class="dq-text-ar">بتعالج داتاسيت بـ 50 عمود: 5 categorical و45 numerical. إزاي هتبني الـ ColumnTransformer بتاعك؟</div>
+          <button class="show-ans-btn" onclick="toggleDQ(this)">▶ Show Answer · شوف الإجابة</button>
+          <div class="dq-answer">
+            <div class="dq-ans-en">Define two transformers: a <strong>numeric pipeline</strong> (imputer + scaler) applied to numerical column names, and a <strong>categorical pipeline</strong> (imputer with 'most_frequent' + OneHotEncoder) applied to categorical columns. Use <code>ColumnTransformer</code> with named transformers and column name lists (not indices) for clarity and maintainability. Set <code>remainder='drop'</code> or <code>'passthrough'</code> based on whether you want unused columns included.</div>
+            <div class="dq-ans-ar">حدد محولين: <strong>pipeline رقمي</strong> (imputer + scaler) على أسماء الأعمدة الرقمية، و<strong>pipeline فئوي</strong> (imputer بـ 'most_frequent' + OneHotEncoder) على الأعمدة الفئوية. استخدم <code>ColumnTransformer</code> بمحولات مسماة وقوائم أسماء أعمدة (مش أرقام) للوضوح وسهولة الصيانة.</div>
+          </div>
+        </div>
+
+        <div class="deep-q-item">
+          <div class="dq-num">Question 03</div>
+          <div class="dq-text">Why does StandardScaler use <code>fit_transform</code> on X_train but only <code>transform</code> on X_test? What would go wrong if you used <code>fit_transform</code> on X_test?</div>
+          <div class="dq-text-ar">ليه StandardScaler بيستخدم <code>fit_transform</code> على X_train بس <code>transform</code> على X_test؟ إيه اللي هيحصل غلط لو استخدمنا <code>fit_transform</code> على X_test؟</div>
+          <button class="show-ans-btn" onclick="toggleDQ(this)">▶ Show Answer · شوف الإجابة</button>
+          <div class="dq-answer">
+            <div class="dq-ans-en">Using <code>fit_transform</code> on X_test would compute NEW mean and std from test data — causing <strong>data leakage</strong>. The test set must be scaled using the <em>exact same</em> mean and std learned from the training set. This simulates real-world conditions where new data arrives and must be processed with the original statistics. The result of data leakage: inflated test scores that don't reflect real performance.</div>
+            <div class="dq-ans-ar">استخدام <code>fit_transform</code> على X_test هيحسب متوسط وانحراف <em>جديدين</em> من الـ test — بيسبب <strong>data leakage</strong>. بيانات الاختبار لازم تتحجم بنفس المتوسط والانحراف اللي اتعلم من التدريب. ده بيحاكي الواقع لما بيانات جديدة بتيجي ولازم تتعالج بالإحصائيات الأصلية. نتيجة الـ data leakage: نتائج اختبار مبالغ فيها مش حقيقية.</div>
+          </div>
+        </div>
+
+        <div class="deep-q-item">
+          <div class="dq-num">Question 04</div>
+          <div class="dq-text">You have a "Rating" column with values: Poor, Fair, Good, Very Good, Excellent. Would you use LabelEncoder or OneHotEncoder? Why?</div>
+          <div class="dq-text-ar">عندك عمود "Rating" بقيم: Poor, Fair, Good, Very Good, Excellent. هتستخدم LabelEncoder ولا OneHotEncoder؟ ليه؟</div>
+          <button class="show-ans-btn" onclick="toggleDQ(this)">▶ Show Answer · شوف الإجابة</button>
+          <div class="dq-answer">
+            <div class="dq-ans-en"><strong>LabelEncoder (or OrdinalEncoder)</strong> is correct here! This is <em>ordinal</em> data — the categories have a meaningful order (Poor &lt; Fair &lt; Good &lt; Very Good &lt; Excellent). The numerical representation should reflect this ordering. OneHotEncoder would lose the ordering information and create 5 new columns unnecessarily. Use <code>OrdinalEncoder</code> from sklearn for the most control over the encoding order.</div>
+            <div class="dq-ans-ar"><strong>LabelEncoder (أو OrdinalEncoder)</strong> صح هنا! ده بيانات <em>ترتيبية</em> — الفئات عندها ترتيب منطقي (Poor &lt; Fair &lt; Good &lt; Very Good &lt; Excellent). التمثيل الرقمي لازم يعكس الترتيب ده. OneHotEncoder هيضيع معلومة الترتيب وهيعمل 5 أعمدة جديدة بدون داعي. استخدم <code>OrdinalEncoder</code> من sklearn للتحكم الكامل في ترتيب الترميز.</div>
+          </div>
+        </div>
+
+        <div class="deep-q-item">
+          <div class="dq-num">Question 05</div>
+          <div class="dq-text">In a real project, what is the CORRECT order of all preprocessing steps? Place them: Scaling, Splitting, Encoding, Missing Data, Loading.</div>
+          <div class="dq-text-ar">في بروجكت حقيقي، إيه الترتيب الصح لكل خطوات الـ preprocessing؟ رتّبهم: Scaling, Splitting, Encoding, Missing Data, Loading.</div>
+          <button class="show-ans-btn" onclick="toggleDQ(this)">▶ Show Answer · شوف الإجابة</button>
+          <div class="dq-answer">
+            <div class="dq-ans-en"><strong>Correct order:</strong> 1. <strong>Loading</strong> (read data) → 2. <strong>Missing Data</strong> (impute NaN) → 3. <strong>Encoding</strong> (convert text to numbers) → 4. <strong>Splitting</strong> (train/test split) → 5. <strong>Scaling</strong> (fit on train, transform both). CRITICAL: Scaling MUST come after splitting to prevent data leakage. Encoding can technically come after splitting too if using a Pipeline.</div>
+            <div class="dq-ans-ar"><strong>الترتيب الصح:</strong> 1. <strong>Loading</strong> (قراءة البيانات) ← 2. <strong>Missing Data</strong> (معالجة NaN) ← 3. <strong>Encoding</strong> (تحويل النص لأرقام) ← 4. <strong>Splitting</strong> (تقسيم) ← 5. <strong>Scaling</strong> (fit على التدريب، transform الاتنين). مهم جداً: الـ Scaling لازم بعد التقسيم لمنع data leakage.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHEAT SHEET -->
+      <div style="margin-top:40px; font-size:11px; text-transform:uppercase; letter-spacing:3px; color:var(--text-dim); font-family:'JetBrains Mono',monospace; margin-bottom:16px;">⚡ Quick Reference Cheat Sheet</div>
+      <div class="cheatsheet">
+        <div class="cs-header">⚡ Preprocessing Cheat Sheet · ورقة المراجعة السريعة</div>
+        <div class="cs-row">
+          <div class="cs-code">pd.read_csv()</div>
+          <div class="cs-desc">Load CSV into DataFrame</div>
+          <div class="cs-ar">تحميل ملف CSV في DataFrame</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">df.iloc[:, :-1]</div>
+          <div class="cs-desc">All columns except last (X)</div>
+          <div class="cs-ar">كل الأعمدة غير الأخيرة (X)</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">df.iloc[:, -1]</div>
+          <div class="cs-desc">Only last column (y)</div>
+          <div class="cs-ar">العمود الأخير فقط (y)</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">SimpleImputer(strategy='mean')</div>
+          <div class="cs-desc">Fill NaN with column mean</div>
+          <div class="cs-ar">ملء NaN بالمتوسط</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">OneHotEncoder()</div>
+          <div class="cs-desc">Categorical → binary columns (X)</div>
+          <div class="cs-ar">فئوي → أعمدة ثنائية (X)</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">LabelEncoder()</div>
+          <div class="cs-desc">Categorical → integers (y)</div>
+          <div class="cs-ar">فئوي → أرقام (y)</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">train_test_split(test_size=0.2)</div>
+          <div class="cs-desc">80% train / 20% test split</div>
+          <div class="cs-ar">80% تدريب / 20% اختبار</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">StandardScaler()</div>
+          <div class="cs-desc">Scale to mean=0, std=1</div>
+          <div class="cs-ar">تحجيم إلى متوسط=0، انحراف=1</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">.fit_transform(train)</div>
+          <div class="cs-desc">Learn + apply (training only)</div>
+          <div class="cs-ar">تعلم + طبّق (التدريب فقط)</div>
+        </div>
+        <div class="cs-row">
+          <div class="cs-code">.transform(test)</div>
+          <div class="cs-desc">Apply learned rules (test only)</div>
+          <div class="cs-ar">طبّق القواعد المتعلمة (الاختبار)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      Built for Sam · Data Preprocessing in Python · ML A-Z Course<br/>
+      <span style="color:var(--ar);font-family:'Cairo',sans-serif;">اتبنى لـ سام · معالجة البيانات بـ Python</span><br/><br/>
+      <span style="opacity:0.4;">Keep learning. الاستمرار في التعلم 🚀</span>
+    </div>
+  </div>
+</main>
+
+<script>
+  // Toggle Q&A
+  function toggleQA(el) {
+    const answer = el.nextElementSibling;
+    const arrow = el.querySelector('.qa-arrow');
+    answer.classList.toggle('open');
+    arrow.classList.toggle('open');
+  }
+
+  // Toggle deep Q answers
+  function toggleDQ(btn) {
+    const answer = btn.nextElementSibling;
+    answer.classList.toggle('open');
+    btn.textContent = answer.classList.contains('open')
+      ? '▼ Hide Answer · إخفاء الإجابة'
+      : '▶ Show Answer · شوف الإجابة';
+  }
+
+  // Copy code button
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre.code-body');
+    const text = pre.innerText.replace(/^\d+\t/gm, '').replace(/\d+  /g, '');
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+
+  // Active nav + progress tracking
+  const phases = ['phase1','phase2','phase3','phase4','phase5','phase6','phase7','phase8','ai-tips'];
+  const navItems = document.querySelectorAll('.nav-item[data-phase]');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+
+  const visited = new Set();
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        visited.add(id);
+
+        // Update active nav
+        navItems.forEach(item => {
+          item.classList.toggle('active', item.getAttribute('href') === '#' + id);
+        });
+
+        // Update progress
+        const count = [...visited].filter(v => v !== 'ai-tips').length;
+        progressFill.style.width = (count / 8 * 100) + '%';
+        progressText.textContent = count + ' / 8 phases';
+      }
+    });
+  }, { threshold: 0.3 });
+
+  phases.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  // Smooth scroll for nav links
+  document.querySelectorAll('.nav-item[href^="#"]').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
