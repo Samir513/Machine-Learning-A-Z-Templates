@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Linear Regression - Master Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Fira+Code:wght@400;500&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-purple: #c084fc;
+            --accent-yellow: #facc15;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent-blue);
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            color: var(--accent-green);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        pre {
+            background-color: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #1e293b;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .keyword { color: #c678dd; } /* Purple */
+        .function { color: #61afef; } /* Blue */
+        .string { color: #98c379; } /* Green */
+        .comment { color: #7f848e; font-style: italic; } /* Grey */
+
+        .explanation {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .lang-box {
+            flex: 1;
+            background: #27354a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .eng-text {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .egy-text {
+            font-family: 'Cairo', sans-serif;
+            text-align: right;
+            direction: rtl;
+            font-size: 1.1rem;
+        }
+
+        .ai-tips-card {
+            background: linear-gradient(145deg, #1e293b, #2d1b4e);
+            border: 1px solid var(--accent-purple);
+        }
+
+        .ai-tips-title { color: var(--accent-purple); }
+        .qa-card { border-left: 4px solid var(--accent-yellow); }
+        .qa-title { color: var(--accent-yellow); }
+        
+        .tip-box {
+            background: rgba(250, 204, 21, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simple Linear Regression</h1>
+    <p class="subtitle">Complete Study Guide | دليل المذاكرة الشامل</p>
+
+    <!-- Phase 1 -->
+    <div class="card">
+        <h2 class="card-title">Phase 1: Importing Libraries <span>📦</span></h2>
+        <pre><code><span class="keyword">import</span> numpy <span class="keyword">as</span> np
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd</code></pre>
+        <div class="explanation">
+            <div class="lang-box eng-text">
+                <strong>English:</strong> We import the essential toolkit. <code>numpy</code> for math arrays, <code>matplotlib</code> for plotting charts, and <code>pandas</code> for managing the dataset as a dataframe.
+            </div>
+            <div class="lang-box egy-text">
+                <strong>عربي:</strong> بنستدعي العدة الأساسية بتاعتنا. <code>numpy</code> عشان شغل الرياضيات والمصفوفات، <code>matplotlib</code> عشان نرسم الجراف، و <code>pandas</code> عشان نقرأ الداتا ونتعامل معاها كجدول.
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="card">
+        <h2 class="card-title">Phase 2: Loading Data & Slicing <span>✂️</span></h2>
+        <pre><code>dataset = pd.<span class="function">read_csv</span>(<span class="string">'Salary_Data.csv'</span>)
+X = dataset.<span class="function">iloc</span>[:, :-1].values  <span class="comment"># Independent (2D array)</span>
+y = dataset.<span class="function">iloc</span>[:, -1].values   <span class="comment"># Dependent (1D array)</span></code></pre>
+        <div class="explanation">
+            <div class="lang-box eng-text">
+                <strong>English:</strong> We load the CSV file. We slice the independent variable <code>X</code> (Years of Experience) forcing it to be a 2D array using <code>:-1</code>. We slice <code>y</code> (Salary) as a flat 1D array.
+            </div>
+            <div class="lang-box egy-text">
+                <strong>عربي:</strong> بنقرا ملف الداتا. أهم حاجة هنا وإحنا بنقص الداتا إن الـ <code>X</code> (سنين الخبرة) لازم تكون مصفوفة 2D عشان كده كتبنا <code>:-1</code>، لكن الـ <code>y</code> (المرتب) بتبقى 1D عادي.
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="card">
+        <h2 class="card-title">Phase 3: Splitting the Data <span>🪓</span></h2>
+        <pre><code><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split
+X_train, X_test, y_train, y_test = <span class="function">train_test_split</span>(X, y, test_size=<span class="string">0.2</span>, random_state=<span class="string">42</span>)</code></pre>
+        <div class="explanation">
+            <div class="lang-box eng-text">
+                <strong>English:</strong> We hide 20% of the data (Test set) so the model doesn't see it. We use the other 80% (Train set) to teach the model. <code>random_state=42</code> ensures we get the same split every time.
+            </div>
+            <div class="lang-box egy-text">
+                <strong>عربي:</strong> بنخبي 20% من الداتا (للاختبار) عشان الموديل ميشوفهاش، وبندربه على الـ 80% الباقيين. الـ <code>random_state=42</code> دي عشان كل ما نرن الكود يطلعلنا نفس التقسيمة بالظبط بدون تغيير.
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 4 & 5 -->
+    <div class="card">
+        <h2 class="card-title">Phase 4 & 5: Training & Predicting <span>🤖</span></h2>
+        <pre><code><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression
+LR = <span class="function">LinearRegression</span>()
+LR.<span class="function">fit</span>(X_train, y_train) <span class="comment"># Training the model</span>
+
+y_pred = LR.<span class="function">predict</span>(X_test) <span class="comment"># Making predictions</span></code></pre>
+        <div class="explanation">
+            <div class="lang-box eng-text">
+                <strong>English:</strong> We create the Simple Linear Regression object. The <code>fit()</code> method draws the optimal straight line through the training dots. The <code>predict()</code> method guesses the salaries for the test set.
+            </div>
+            <div class="lang-box egy-text">
+                <strong>عربي:</strong> بنعمل الموديل بتاعنا. أمر <code>fit()</code> هو اللي بيخلي الموديل يتدرب ويرسم أحسن خط يمر بنقط التدريب. وأمر <code>predict()</code> بيخليه يخمن المرتبات بتاعة الـ 20% اللي خبينها.
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 6 -->
+    <div class="card">
+        <h2 class="card-title">Phase 6: Visualizing Results <span>📊</span></h2>
+        <pre><code>plt.<span class="function">scatter</span>(X_train, y_train, color=<span class="string">'red'</span>)
+plt.<span class="function">plot</span>(X_train, LR.<span class="function">predict</span>(X_train), color=<span class="string">'blue'</span>)
+plt.<span class="function">title</span>(<span class="string">'Salary vs Experience (Training set)'</span>)
+plt.<span class="function">xlabel</span>(<span class="string">'Years of Experience'</span>)
+plt.<span class="function">ylabel</span>(<span class="string">'Salary'</span>)
+plt.<span class="function">show</span>()</code></pre>
+        <div class="explanation">
+            <div class="lang-box eng-text">
+                <strong>English:</strong> <code>scatter()</code> draws the real data points (Red dots). <code>plot()</code> draws the predicted line (Blue line) straight through them. 
+            </div>
+            <div class="lang-box egy-text">
+                <strong>عربي:</strong> أمر <code>scatter</code> بيرسم النقط الحمراء اللي بتمثل الداتا الحقيقية. وأمر <code>plot</code> بيرسم الخط الأزرق المستقيم اللي الموديل اتعلمه واستنتجه.
+            </div>
+        </div>
+    </div>
+
+    <!-- Q&A Section -->
+    <div class="card qa-card">
+        <h2 class="card-title qa-title">Crucial Q&A | أسئلة وأجوبة مهمة <span>❓</span></h2>
+        
+        <p><strong>Q1: Why do we write <code>X = df.iloc[:, :-1].values</code> instead of just <code>X = df.iloc[:, 0].values</code>?</strong><br>
+        <span style="color: var(--text-muted);"><strong>Answer / الإجابة:</strong> Scikit-Learn STRICTLY requires the independent variables (X) to be a 2D matrix, even if there is only 1 column. <code>:-1</code> creates a 2D shape. <code>0</code> creates a 1D list and throws an error!<br>
+        <span dir="rtl" style="display: block; font-family: 'Cairo'; text-align: right;">مكتبة Scikit-Learn بتشترط إن الـ X لازم تكون جدول ثنائي الأبعاد (2D) حتى لو عمود واحد. لو كتبنا 0 بس هيطلع إيرور لأنه هيعتبره لستة عادية (1D).</span></span></p>
+
+        <p><strong>Q2: Why didn't we use Feature Scaling (StandardScaler) in Simple Linear Regression?</strong><br>
+        <span style="color: var(--text-muted);"><strong>Answer / الإجابة:</strong> Because the linear regression formula ($y = mx + b$) has coefficients ($m$). The coefficient adapts to the scale of the data automatically. If numbers are big, the coefficient shrinks. No scaling needed!<br>
+        <span dir="rtl" style="display: block; font-family: 'Cairo'; text-align: right;">لأن معادلة الخط المستقيم فيها (معاملات - Coefficients) بتعوض فرق الأرقام. لو الأرقام كبيرة جداً، الموديل بيصغر المعامل بتاعها أوتوماتيك، فمش محتاجين نعمل Scaling هنا.</span></span></p>
+    </div>
+
+    <!-- Memorization Tips -->
+    <div class="card">
+        <h2 class="card-title">Code Memorization Trick | تريكة للحفظ <span>🧠</span></h2>
+        <div class="tip-box">
+            <h3 style="margin-top:0;">The Scikit-Learn 4-Step Rhythm</h3>
+            <p>You don't need to memorize the exact code characters, just memorize this 4-step music beat. Almost EVERY model in scikit-learn uses this exact sequence:</p>
+            <ol>
+                <li><strong>IMPORT:</strong> <code>from sklearn... import Model</code></li>
+                <li><strong>INSTANTIATE:</strong> <code>regressor = Model()</code></li>
+                <li><strong>FIT (Train):</strong> <code>regressor.fit(X_train, y_train)</code></li>
+                <li><strong>PREDICT (Test):</strong> <code>y_pred = regressor.predict(X_test)</code></li>
+            </ol>
+            <p dir="rtl" style="font-family: 'Cairo'; text-align: right;">عشان تحفظ كود أي موديل، افتكر الـ 4 خطوات دول دايماً بالترتيب: استدعي المكتبة، اعمل نسخة (Object) من الموديل، دربه بـ fit، وخليه يتوقع بـ predict.</p>
+        </div>
+    </div>
+
+    <!-- AI TIPS CARD (EXTRA PRO CODE) -->
+    <div class="card ai-tips-card">
+        <h2 class="card-title ai-tips-title">AI Tips: Professional Next Steps <span>🚀</span></h2>
+        <p>Visualizing a graph is great for humans, but in a professional project, your boss wants <strong>numbers</strong> to prove the model works. Here is the extra code you should add to your project to make it 100% professional!</p>
+
+        <h3>1. Evaluating Model Accuracy (R-Squared & MSE)</h3>
+        <p>Add this phase at the end of your project to mathematically score your model:</p>
+        <pre><code><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error, r2_score
+
+<span class="comment"># Calculate how close predictions are to actual test values</span>
+r2 = <span class="function">r2_score</span>(y_test, y_pred)
+mse = <span class="function">mean_squared_error</span>(y_test, y_pred)
+
+<span class="keyword">print</span>(<span class="string">f"Model Accuracy (R-squared): {r2 * 100:.2f}%"</span>)
+<span class="keyword">print</span>(<span class="string">f"Mean Squared Error: {mse:.2f}"</span>)</code></pre>
+        <p dir="rtl" style="font-family: 'Cairo'; text-align: right; color: var(--text-muted);">في الشغل الحقيقي الرسمة مش كفاية، المدير بيعوز رقم يثبت دقة الموديل. استخدم <code>r2_score</code> عشان تطلع نسبة الدقة كـ مئوية (مثلاً 95%).</p>
+
+        <h3>2. Predicting a Single Custom Value</h3>
+        <p>What if HR asks: <em>"How much should we pay someone with exactly 12.5 years of experience?"</em></p>
+        <pre><code><span class="comment"># Remember: predict() expects a 2D array, so we use double brackets [[ ]]</span>
+single_prediction = LR.<span class="function">predict</span>([[<span class="string">12.5</span>]])
+<span class="keyword">print</span>(<span class="string">f"Predicted Salary for 12.5 years: ${single_prediction[0]:.2f}"</span>)</code></pre>
+        <p dir="rtl" style="font-family: 'Cairo'; text-align: right; color: var(--text-muted);">لو عايز تتوقع مرتب موظف واحد بس (مثلاً خبرة 12.5 سنة)، لازم تحط الرقم بين قوسين مزدوجين <code>[[ ]]</code> عشان الموديل بيفهم الداتا في شكل 2D.</p>
+
+    </div>
+
+</div>
+
+</body>
+</html>
