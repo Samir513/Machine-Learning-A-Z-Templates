@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multiple Linear Regression — Study Guide | Sam's ML Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1f2533;
+    --gold: #d4a843;
+    --gold-dim: #8a6a22;
+    --teal: #2dd4bf;
+    --teal-dim: #134e4a;
+    --red: #f87171;
+    --red-dim: #450a0a;
+    --blue: #60a5fa;
+    --blue-dim: #1e3a5f;
+    --green: #4ade80;
+    --green-dim: #052e16;
+    --purple: #c084fc;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #475569;
+    --arabic: #f0c070;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND GRID ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SIDEBAR NAV ── */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 240px;
+    background: rgba(17,19,24,0.97);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 100;
+    overflow-y: auto;
+  }
+
+  .sidebar-brand {
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .sidebar-brand .title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .sidebar-brand .sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .nav-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 12px 20px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--gold);
+    border-left-color: var(--gold);
+    background: rgba(212,168,67,0.05);
+  }
+
+  .nav-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 240px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 60px 60px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::after {
+    content: 'y = b₀ + b₁x₁ + b₂x₂ + b₃x₃ + ε';
+    position: absolute;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    color: var(--gold-dim);
+    opacity: 0.35;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .header .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header .tag::before {
+    content: '';
+    display: block;
+    width: 20px; height: 1px;
+    background: var(--teal);
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+  }
+
+  .header h1 span { color: var(--gold); }
+
+  .header .arabic-title {
+    font-size: 20px;
+    color: var(--arabic);
+    margin-top: 8px;
+    font-style: italic;
+    direction: rtl;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .header .meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .meta-pill span { color: var(--gold); }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 60px 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .section-subtitle {
+    font-size: 14px;
+    color: var(--arabic);
+    margin-top: 4px;
+    direction: rtl;
+    font-style: italic;
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-header .filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .code-header .phase-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--teal);
+    border: 1px solid var(--teal-dim);
+  }
+
+  .code-body {
+    padding: 20px;
+    overflow-x: auto;
+  }
+
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: #abb2bf;
+    white-space: pre;
+  }
+
+  /* Syntax */
+  .kw { color: #c678dd; }
+  .fn { color: #61afef; }
+  .cls { color: #e5c07b; }
+  .str { color: #98c379; }
+  .num { color: #d19a66; }
+  .cm { color: #5c6370; font-style: italic; }
+  .op { color: #56b6c2; }
+  .var { color: #e06c75; }
+  .bi { color: #56b6c2; }
+
+  /* ── ANNOTATION ── */
+  .annotation {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 8px 0 24px;
+  }
+
+  .ann-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+
+  .ann-block.eng { border-left: 3px solid var(--teal); }
+  .ann-block.ara { border-left: 3px solid var(--arabic); direction: rtl; }
+
+  .ann-block .lang-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .ann-block.eng .lang-tag { color: var(--teal); }
+  .ann-block.ara .lang-tag { color: var(--arabic); }
+
+  .ann-block p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  /* ── Q&A CARDS ── */
+  .qa-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .qa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .qa-card.full { grid-column: 1 / -1; }
+
+  .qa-question {
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+
+  .qa-question:hover { background: var(--surface2); }
+
+  .qa-q-icon {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .qa-q-icon.gold { background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid var(--gold-dim); }
+  .qa-q-icon.teal { background: rgba(45,212,191,0.1); color: var(--teal); border: 1px solid var(--teal-dim); }
+  .qa-q-icon.red  { background: rgba(248,113,113,0.1); color: var(--red);  border: 1px solid var(--red-dim); }
+  .qa-q-icon.blue { background: rgba(96,165,250,0.1); color: var(--blue); border: 1px solid var(--blue-dim); }
+  .qa-q-icon.purple { background: rgba(192,132,252,0.1); color: var(--purple); border: 1px solid #4a1d9c; }
+
+  .qa-q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .qa-q-text .q-sub {
+    font-family: 'Crimson Pro', serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+    direction: rtl;
+  }
+
+  .qa-toggle { color: var(--text-dim); font-size: 14px; transition: transform 0.3s; margin-top: 3px; }
+
+  .qa-answer {
+    display: none;
+    padding: 0 18px 18px 56px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .qa-answer.open { display: block; }
+
+  .qa-answer p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+
+  .qa-answer .ara-ans {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(240,192,112,0.05);
+    border: 1px solid rgba(240,192,112,0.15);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--arabic);
+    direction: rtl;
+    line-height: 1.7;
+  }
+
+  /* ── INFO BOXES ── */
+  .info-box {
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin: 20px 0;
+  }
+
+  .info-box.warn { background: rgba(212,168,67,0.07); border: 1px solid rgba(212,168,67,0.2); }
+  .info-box.danger { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .info-box.tip { background: rgba(45,212,191,0.07); border: 1px solid rgba(45,212,191,0.2); }
+  .info-box.info { background: rgba(96,165,250,0.07); border: 1px solid rgba(96,165,250,0.2); }
+
+  .info-box-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+
+  .info-box-content .title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .info-box.warn .title { color: var(--gold); }
+  .info-box.danger .title { color: var(--red); }
+  .info-box.tip .title { color: var(--teal); }
+  .info-box.info .title { color: var(--blue); }
+
+  .info-box-content p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+  .info-box-content .ara { font-size: 13px; color: var(--arabic); direction: rtl; margin-top: 6px; font-style: italic; }
+
+  /* ── MEMORY TIPS ── */
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .memory-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .memory-card::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.04;
+  }
+
+  .memory-card.gold-card::before { background: var(--gold); }
+  .memory-card.teal-card::before { background: var(--teal); }
+  .memory-card.blue-card::before { background: var(--blue); }
+  .memory-card.red-card::before  { background: var(--red); }
+  .memory-card.purple-card::before { background: var(--purple); }
+  .memory-card.green-card::before { background: var(--green); }
+
+  .memory-emoji { font-size: 22px; margin-bottom: 10px; }
+
+  .memory-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .memory-card p { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+  .memory-card .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); margin-top: 6px; display: block; }
+
+  /* ── PHASES TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+    margin-top: 24px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--teal), var(--gold), var(--purple));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 32px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -28px;
+    top: 4px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    background: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .timeline-dot.gold { background: var(--gold); }
+  .timeline-dot.purple { background: var(--purple); }
+  .timeline-dot.red { background: var(--red); }
+  .timeline-dot.blue { background: var(--blue); }
+  .timeline-dot.green { background: var(--green); }
+
+  .timeline-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .timeline-label .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── AI TIPS PAGE ── */
+  .tips-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tips-hero::before {
+    content: '🤖';
+    position: absolute;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 64px;
+    opacity: 0.08;
+  }
+
+  .tips-hero h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .tips-hero p { font-size: 15px; color: var(--text-muted); max-width: 600px; }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .tip-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .tip-card:hover { border-color: var(--gold-dim); }
+
+  .tip-card-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tip-card-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .tip-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .tip-card-subtitle { font-size: 12px; color: var(--text-dim); margin-top: 1px; direction: rtl; }
+
+  .tip-card-body { padding: 16px 18px; }
+  .tip-card-body p { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.65; }
+
+  /* ── FORMULA DISPLAY ── */
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: var(--gold);
+    text-align: center;
+    margin: 16px 0;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+  }
+
+  td.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); }
+  td.gold { color: var(--gold); }
+  td.red { color: var(--red); }
+  td.green { color: var(--green); }
+
+  tr:last-child td { border-bottom: none; }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 10px 18px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+    letter-spacing: 0.06em;
+  }
+
+  .tab-btn.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  .tab-btn:hover { color: var(--text-muted); }
+
+  .tab-content { display: none; padding-top: 20px; }
+  .tab-content.active { display: block; }
+
+  /* ── METRIC CARDS ── */
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .metric-card .metric-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .metric-card .metric-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .metric-card .metric-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1100px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .header { padding: 40px 30px 30px; }
+    .section { padding: 40px 30px; }
+    .qa-grid { grid-template-columns: 1fr; }
+    .memory-grid { grid-template-columns: 1fr 1fr; }
+    .tips-grid { grid-template-columns: 1fr; }
+    .metric-row { grid-template-columns: 1fr 1fr; }
+    .annotation { grid-template-columns: 1fr; }
+    .header::after { display: none; }
+  }
+
+  /* ── PAGE SECTIONS ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── SCROLL REVEAL ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fadeUp 0.5s ease forwards; }
+
+  /* ── PROGRESS ── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 240px; right: 0;
+    height: 2px;
+    background: var(--border);
+    z-index: 200;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--teal), var(--gold));
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  @media (max-width: 1100px) {
+    .progress-bar { left: 0; }
+  }
+
+  .highlight { color: var(--gold); font-weight: 600; }
+  .code-inline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--teal);
+  }
+
+  /* step badge */
+  .step-badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    padding: 2px 8px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="title">ML Notes</div>
+    <div class="sub">multiple_linear_reg.py</div>
+  </div>
+
+  <div class="nav-label">Pages</div>
+  <a class="nav-item active" onclick="showPage('code', this)"><span class="dot"></span>Code Walkthrough</a>
+  <a class="nav-item" onclick="showPage('concepts', this)"><span class="dot"></span>5 Big Questions</a>
+  <a class="nav-item" onclick="showPage('memory', this)"><span class="dot"></span>Memory Tips</a>
+  <a class="nav-item" onclick="showPage('aitips', this)"><span class="dot"></span>AI Tips & Next Steps</a>
+  <a class="nav-item" onclick="showPage('pro', this)"><span class="dot"></span>Full Pro Project</a>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="tag">Chapter 02 · Regression</div>
+    <h1>Multiple <span>Linear</span><br>Regression</h1>
+    <div class="arabic-title">الانحدار الخطي المتعدد — شرح كامل بالعربي والانجليزي</div>
+    <div class="meta">
+      <div class="meta-pill">sklearn <span>·</span> LinearRegression</div>
+      <div class="meta-pill">statsmodels <span>·</span> OLS</div>
+      <div class="meta-pill">numpy <span>·</span> pandas</div>
+      <div class="meta-pill">Feature Scaling <span>· NO</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: CODE WALKTHROUGH                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-code" class="page active">
+
+    <!-- PHASE 1 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">01</div>
+        <div>
+          <div class="section-title">Import Libraries</div>
+          <div class="section-subtitle">استيراد المكتبات — الأدوات اللي هنستخدمها</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">multiple_linear_regression.py</span>
+          <span class="phase-badge">PHASE 1 · Imports</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">import</span> <span class="cls">numpy</span> <span class="kw">as</span> np
+<span class="kw">import</span> <span class="cls">matplotlib</span>.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> <span class="cls">pandas</span> <span class="kw">as</span> pd</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p>These three are the <strong>standard trinity</strong> of Python data science.
+          <code class="code-inline">numpy</code> handles numerical operations,
+          <code class="code-inline">matplotlib</code> handles plotting,
+          and <code class="code-inline">pandas</code> handles tabular data (DataFrames). You'll import these at the top of virtually every ML script.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 مصري</div>
+          <p>دي "التالوت المقدس" بتاع data science في Python. <code class="code-inline">numpy</code> للحسابات الرياضية، <code class="code-inline">matplotlib</code> للرسم والتخطيط، و<code class="code-inline">pandas</code> للتعامل مع الجداول والبيانات. هتشوفهم في أول كل كود ML هتكتبه في حياتك.</p>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <div class="info-box-icon">💡</div>
+        <div class="info-box-content">
+          <div class="title">Why <code class="code-inline">as np</code> / <code class="code-inline">as pd</code>?</div>
+          <p>It's a community convention (alias). <code class="code-inline">numpy.array([1,2])</code> becomes <code class="code-inline">np.array([1,2])</code> — less typing, more readable.</p>
+          <div class="ara">عشان بدل ما تكتب الاسم الطويل في كل مرة، بتديله اسم مختصر. زي الـ nickname للمكتبة.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">02</div>
+        <div>
+          <div class="section-title">Load the Dataset</div>
+          <div class="section-subtitle">تحميل البيانات — قراءة الداتا من ملف CSV</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">multiple_linear_regression.py</span>
+          <span class="phase-badge">PHASE 2 · Data Loading</span>
+        </div>
+        <div class="code-body"><pre><span class="var">dataset</span> <span class="op">=</span> pd.<span class="fn">read_csv</span>(<span class="str">'50_Startups.csv'</span>)
+<span class="var">X</span> <span class="op">=</span> <span class="var">dataset</span>.iloc[:, :-<span class="num">1</span>].values  <span class="cm"># All columns EXCEPT last = Features</span>
+<span class="var">y</span> <span class="op">=</span> <span class="var">dataset</span>.iloc[:, -<span class="num">1</span>].values   <span class="cm"># Last column only = Target (Profit)</span></pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><code class="code-inline">iloc[:, :-1]</code> means: "take ALL rows (<code>:</code>), and take ALL columns EXCEPT the very last one (<code>:-1</code>)". This gives us our <strong>independent variables (X)</strong>. The last column is always the dependent variable <strong>(y)</strong> — what we're trying to predict.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 مصري</div>
+          <p><code class="code-inline">iloc</code> معناها "اختار بالأرقام". <code>[:, :-1]</code> معناها: "كل الصفوف، وكل الأعمدة إلا الأخير". ببساطة X هو "الأسباب" و y هو "النتيجة" اللي عايز تتنبأ بيها (زي الـ Profit مثلاً).</p>
+        </div>
+      </div>
+
+      <div class="info-box warn">
+        <div class="info-box-icon">⚠️</div>
+        <div class="info-box-content">
+          <div class="title">50_Startups.csv — Dataset Structure</div>
+          <p>Columns: <strong>R&D Spend</strong>, <strong>Administration</strong>, <strong>Marketing Spend</strong>, <strong>State</strong> (categorical!), <strong>Profit</strong> (target). The <em>State</em> column is text — we must encode it in the next phase.</p>
+          <div class="ara">الداتاسيت فيه عمود "State" نصي (New York, California...) — لازم نحوله لأرقام الأول قبل ما ندخله في الموديل.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">03</div>
+        <div>
+          <div class="section-title">Encode Categorical Data</div>
+          <div class="section-subtitle">تحويل البيانات النصية لأرقام — One-Hot Encoding</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">multiple_linear_regression.py</span>
+          <span class="phase-badge">PHASE 3 · Encoding + Dummy Trap</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">from</span> sklearn.compose <span class="kw">import</span> <span class="cls">ColumnTransformer</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">OneHotEncoder</span>
+
+<span class="var">ct</span> <span class="op">=</span> <span class="cls">ColumnTransformer</span>(
+    transformers<span class="op">=</span>[(<span class="str">'encoder'</span>, <span class="cls">OneHotEncoder</span>(), [<span class="num">3</span>])],  <span class="cm"># Column index 3 = 'State'</span>
+    remainder<span class="op">=</span><span class="str">'passthrough'</span>                           <span class="cm"># Keep all other columns</span>
+)
+
+<span class="var">X</span> <span class="op">=</span> np.<span class="fn">array</span>(<span class="var">ct</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>))
+
+<span class="cm"># ── DUMMY VARIABLE TRAP ──────────────────────────────────</span>
+<span class="cm"># OneHotEncoder's drop='first' handles this automatically.</span>
+<span class="cm"># OR: sklearn's LinearRegression handles it internally.</span>
+<span class="cm"># Rule: if you have n categories → use only n-1 dummy columns</span></pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><strong>One-Hot Encoding</strong> converts the text column "State" into binary (0/1) columns. "New York" → [1,0,0], "California" → [0,1,0], "Florida" → [0,0,1]. The <strong>Dummy Variable Trap</strong> means you must drop one of those columns (use <code>n-1</code>) because the dropped column is always perfectly predictable from the remaining ones — which would create <em>multicollinearity</em>.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 مصري</div>
+          <p>الـ One-Hot Encoding بتحول كلمة "New York" لـ [1,0,0]. مشكلة الـ Dummy Trap: لو عندك 3 ولايات وعملت 3 أعمدة، العمود الأول بيتوقع من الاتنين التانيين 100% — ده بيجنن الموديل. الحل: دايمًا استخدم n-1 عمود. <strong>قانون مهم: ن ناقص واحد.</strong></p>
+        </div>
+      </div>
+
+      <div class="info-box danger">
+        <div class="info-box-icon">🚨</div>
+        <div class="info-box-content">
+          <div class="title">The Dummy Variable Trap — The #1 Gotcha</div>
+          <p>If you have 3 states (NY, CA, FL), you need only <strong>2 dummy columns</strong>. The third is fully determined: "if it's not NY and not CA, it must be FL". Having all 3 creates <strong>perfect multicollinearity</strong>, which breaks the OLS matrix inversion.</p>
+          <div class="ara">دي أخطر نقطة في الموضوع. n ولايات → n-1 عمود بس. scikit-learn LinearRegression بيتعامل معها أوتوماتيك، بس المهم تفهم ليه.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">04</div>
+        <div>
+          <div class="section-title">Train / Test Split</div>
+          <div class="section-subtitle">تقسيم الداتا — تدريب واختبار</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">multiple_linear_regression.py</span>
+          <span class="phase-badge">PHASE 4 · Split</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="cls">train_test_split</span>
+
+<span class="var">X_train</span>, <span class="var">X_test</span>, <span class="var">y_train</span>, <span class="var">y_test</span> <span class="op">=</span> <span class="fn">train_test_split</span>(
+    <span class="var">X</span>, <span class="var">y</span>,
+    test_size<span class="op">=</span><span class="num">0.2</span>,      <span class="cm"># 20% held out for testing</span>
+    random_state<span class="op">=</span><span class="num">0</span>    <span class="cm"># Seed = reproducible results</span>
+)</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p>We split data into <strong>training (80%)</strong> and <strong>testing (20%)</strong>. The model <em>only learns from training data</em>. Testing data simulates "future, unseen data" to measure real-world performance. <code class="code-inline">random_state=0</code> is a fixed seed — so your split is the same every time you run the code.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 مصري</div>
+          <p>بنقسم الداتا: 80% للتعلم، 20% للاختبار. الموديل بيتعلم من الـ Train بس، وبنقيس أداءه على الـ Test زي ما كأنه شاف بيانات جديدة. الـ <code>random_state=0</code> زي ما بتقوله "اختار نفس التقسيم كل مرة".</p>
+        </div>
+      </div>
+
+      <div class="info-box info">
+        <div class="info-box-icon">📐</div>
+        <div class="info-box-content">
+          <div class="title">Why No Feature Scaling here?</div>
+          <p>Unlike SVM or KNN, Linear Regression uses <strong>OLS (closed-form math)</strong>. The coefficient b₁ for salary automatically becomes 0.000001 to compensate for the large scale. Scaling would change the coefficients but NOT improve predictions.</p>
+          <div class="ara">مش محتاج StandardScaler هنا! الموديل بيضبط نفسه. لو الراتب 100,000 هيضرب في 0.000001 — النتيجة نفسها زي لو كنت عملت Scaling.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">05</div>
+        <div>
+          <div class="section-title">Train the Model</div>
+          <div class="section-subtitle">تدريب الموديل — الخوارزمية بتتعلم</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">multiple_linear_regression.py</span>
+          <span class="phase-badge">PHASE 5 · Training</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+
+<span class="var">regressor</span> <span class="op">=</span> <span class="cls">LinearRegression</span>()       <span class="cm"># Create model object</span>
+<span class="var">regressor</span>.<span class="fn">fit</span>(<span class="var">X_train</span>, <span class="var">y_train</span>)       <span class="cm"># Learn the coefficients (b0, b1, b2...)</span>
+
+<span class="cm"># After fit(), these are now available:</span>
+<span class="kw">print</span>(<span class="var">regressor</span>.coef_)                <span class="cm"># [b1, b2, b3, b4, b5] — slopes</span>
+<span class="kw">print</span>(<span class="var">regressor</span>.intercept_)           <span class="cm"># b0 — y-intercept</span></pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><code class="code-inline">.fit()</code> is where the <strong>magic happens</strong>. It solves the OLS equation: finds the optimal coefficients (b₀, b₁, b₂...) that minimize the <em>sum of squared residuals</em>. After this line, <code>regressor.coef_</code> holds the "weights" that the model assigned to each feature.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 مصري</div>
+          <p>الـ <code>.fit()</code> هو قلب الموضوع — هنا الموديل بيتعلم. بيحل معادلة رياضية (OLS) ويطلع أحسن قيم لـ b0, b1, b2... اللي بتقلل الـ errors. بعد ما يخلص، قدر تطبع <code>coef_</code> وتشوف "وزن" كل عمود في التنبؤ.</p>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        ŷ = b₀ + b₁·(R&D) + b₂·(Admin) + b₃·(Marketing) + b₄·(State_CA) + b₅·(State_FL)
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">06</div>
+        <div>
+          <div class="section-title">Predict &amp; Evaluate</div>
+          <div class="section-subtitle">التنبؤ والتقييم — هل الموديل كويس؟</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">multiple_linear_regression.py</span>
+          <span class="phase-badge">PHASE 6 · Predict</span>
+        </div>
+        <div class="code-body"><pre><span class="var">y_pred</span> <span class="op">=</span> <span class="var">regressor</span>.<span class="fn">predict</span>(<span class="var">X_test</span>)
+
+<span class="cm"># Side-by-side comparison: Actual vs Predicted</span>
+np.<span class="fn">set_printoptions</span>(precision<span class="op">=</span><span class="num">2</span>)
+<span class="kw">print</span>(np.<span class="fn">concatenate</span>((
+    <span class="var">y_pred</span>.<span class="fn">reshape</span>(<span class="op">len</span>(<span class="var">y_pred</span>),<span class="num">1</span>),
+    <span class="var">y_test</span>.<span class="fn">reshape</span>(<span class="op">len</span>(<span class="var">y_test</span>),<span class="num">1</span>)
+), axis<span class="op">=</span><span class="num">1</span>))</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><code class="code-inline">.predict(X_test)</code> plugs each test row into the learned equation and returns the predicted profits. The <code>reshape</code> + <code>concatenate</code> trick prints both columns side by side so you can visually compare <em>what the model predicted</em> vs <em>what actually happened</em>.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 مصري</div>
+          <p>بعد التدريب، بنسأل الموديل "توقع الـ Profit على الداتا الجديدة". الـ <code>concatenate</code> بيطبع عمودين جنب بعض: التوقعات والحقيقة. كلما كانوا قريبين من بعض، كلما كان الموديل أدق.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 7: BACKWARD ELIMINATION -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">07</div>
+        <div>
+          <div class="section-title">Backward Elimination (statsmodels)</div>
+          <div class="section-subtitle">البكوارد إليمينيشن — ازاي نشيل الأعمدة الضعيفة</div>
+        </div>
+      </div>
+
+      <div class="info-box warn">
+        <div class="info-box-icon">🎯</div>
+        <div class="info-box-content">
+          <div class="title">What is Backward Elimination?</div>
+          <p>This is the <strong>"manual hyperparameter tuning"</strong> of MLR. You start with ALL features, then repeatedly remove the feature with the highest P-value (P &gt; 0.05) until only significant predictors remain.</p>
+          <div class="ara">الـ Backward Elimination هو التيونينج اليدوي للـ MLR. بتبدأ بكل الأعمدة، وكل جولة بتشيل العمود اللي P-value بتاعه أكبر من 0.05، لحد ما يفضل عندك الأعمدة المهمة بس.</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">backward_elimination.py</span>
+          <span class="phase-badge">PHASE 7 · Feature Selection</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">import</span> <span class="cls">statsmodels.api</span> <span class="kw">as</span> sm
+
+<span class="cm"># CRITICAL: statsmodels doesn't add b0 automatically!</span>
+<span class="cm"># We must manually prepend a column of 1s for the intercept</span>
+<span class="var">X_opt</span> <span class="op">=</span> np.<span class="fn">append</span>(
+    arr<span class="op">=</span>np.<span class="fn">ones</span>((<span class="op">len</span>(<span class="var">X</span>), <span class="num">1</span>)).astype(<span class="bi">int</span>),   <span class="cm"># Column of 1s (for b0)</span>
+    values<span class="op">=</span><span class="var">X</span>,
+    axis<span class="op">=</span><span class="num">1</span>
+)
+
+<span class="cm"># Round 1: Fit with ALL features</span>
+<span class="var">regressor_OLS</span> <span class="op">=</span> sm.<span class="cls">OLS</span>(endog<span class="op">=</span><span class="var">y</span>, exog<span class="op">=</span><span class="var">X_opt</span>).<span class="fn">fit</span>()
+<span class="kw">print</span>(<span class="var">regressor_OLS</span>.summary())
+
+<span class="cm"># --- Look at P-values ---</span>
+<span class="cm"># If highest P-value > 0.05 → remove that feature → repeat</span>
+<span class="cm"># Example: remove index 2 (P = 0.99)</span>
+<span class="var">X_opt</span> <span class="op">=</span> <span class="var">X_opt</span>[:, [<span class="num">0</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]]   <span class="cm"># Drop column 2</span>
+
+<span class="cm"># Repeat until all remaining P-values &lt; 0.05</span></pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p>The key output from <code>.summary()</code> is the <strong>P-value column</strong>. A P-value &lt; 0.05 means the feature is <em>statistically significant</em> — it genuinely contributes to predicting the outcome. A P-value of 0.99 means the feature might as well be random noise; remove it.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 مصري</div>
+          <p>الـ P-value بيقولك "هل العمود ده بيساعد فعلاً في التنبؤ؟". لو P > 0.05 يبقى ضعيف وبنشيله. لو P &lt; 0.05 يبقى مهم ونفضله. بنكرر العملية لحد ما كل الأعمدة اللي باقية مهمة.</p>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>P-value</th><th>Meaning</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">P &lt; 0.001</td><td>Extremely significant</td><td class="green">✓ Keep</td></tr>
+          <tr><td class="mono">P &lt; 0.05</td><td>Statistically significant</td><td class="green">✓ Keep</td></tr>
+          <tr><td class="mono">0.05 &lt; P &lt; 0.1</td><td>Borderline</td><td class="gold">Consider keeping</td></tr>
+          <tr><td class="mono">P &gt; 0.1</td><td>Not significant</td><td class="red">✗ Remove</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- end page-code -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: 5 BIG QUESTIONS                                   -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-concepts" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">Q&A</div>
+        <div>
+          <div class="section-title">The 5 Big Questions</div>
+          <div class="section-subtitle">الأسئلة الخمس الكبيرة — اللي لازم تعرف إجاباتها</div>
+        </div>
+      </div>
+
+      <div class="qa-grid">
+
+        <!-- Q1 -->
+        <div class="qa-card full">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon gold">1</div>
+            <div class="qa-q-text">
+              The "5-Year-Old" Question — What is the core logic?
+              <span class="q-sub">سؤال الطفل: إيه الفكرة الأساسية؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer open">
+            <p><strong>The Core Logic:</strong> Instead of predicting an outcome based on just one cause, we're predicting it based on <em>many causes simultaneously</em>.</p>
+            <p><strong>The Visual:</strong> In Simple Linear Regression, you drew a straight line through a 2D scatter plot. In Multiple Linear Regression, imagine a 3D space with dots scattered everywhere — you're now sliding a <strong>flat sheet of glass (a hyperplane)</strong> through the middle of that cloud of dots, trying to get it as close as possible to every point.</p>
+            <div class="formula-box">ŷ = b₀ + b₁x₁ + b₂x₂ + b₃x₃ + … + bₙxₙ</div>
+            <p>Each <strong>bᵢ</strong> is the slope for that specific feature — how much y changes when xᵢ goes up by 1, <em>holding everything else constant</em>.</p>
+            <div class="qa-answer ara-ans">
+              الفكرة ببساطة: بدل ما نتنبأ بالنتيجة من سبب واحد (زي Simple LR)، بنستخدم أسباب كتير في نفس الوقت. مثلاً بدل ما نقول "الـ Profit بيعتمد على الـ R&D بس"، بنقول "بيعتمد على R&D + Administration + Marketing + الولاية". كل عامل عنده معامل (b) بيقولك "قد إيه بيأثر في النتيجة لوحده".
+            </div>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon teal">2</div>
+            <div class="qa-q-text">
+              The "Data Diet" Question — Feature Scaling?
+              <span class="q-sub">محتاجين StandardScaler؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Answer: NO.</strong> You do NOT need Feature Scaling for Multiple Linear Regression.</p>
+            <p><strong>Why:</strong> The mathematical coefficients (b₁, b₂, etc.) adapt automatically. If one feature has huge values (Salary = 100,000), the model just assigns a tiny coefficient (0.000001) to it. The math balances itself out. <em>Scaling changes the values of the coefficients but does NOT improve prediction accuracy.</em></p>
+            <div class="qa-answer ara-ans">
+              الجواب: لأ، مش محتاج. حتى لو عندك عمود فيه 100,000 وعمود فيه 30، الموديل بيتكيف أوتوماتيك — بيضرب الـ 100,000 في عدد صغير جداً زي 0.000001 عشان يعادل الموضوع. الـ StandardScaler مش مطلوب هنا. ✓
+            </div>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon red">3</div>
+            <div class="qa-q-text">
+              The "Kryptonite" Question — Outliers?
+              <span class="q-sub">الـ Outliers بتأثر إزاي؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Answer: TERRIBLY.</strong> MLR handles outliers very poorly.</p>
+            <p><strong>Why:</strong> It uses <strong>OLS (Ordinary Least Squares)</strong> which minimizes the <em>sum of squared errors</em>. Squaring gives extreme outliers disproportionate power — one outlier can tilt the entire hyperplane toward it, ruining predictions for all normal data points.</p>
+            <p><strong>Fix:</strong> Detect and remove extreme outliers before training using <code class="code-inline">IQR method</code> or <code class="code-inline">Z-score</code>.</p>
+            <div class="qa-answer ara-ans">
+              الـ MLR بيتأثر بالـ Outliers بشكل وحش جداً. لأن OLS بيحسب مجموع مربعات الأخطاء — لما بترفع رقم كبير للمربع بيبقى ضخم جداً — وده بيخلي الموديل يميل ناحيته ويدمر باقي التنبؤات. الحل: شيل الـ Outliers قبل التدريب.
+            </div>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="qa-card full">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon blue">4</div>
+            <div class="qa-q-text">
+              The "Dealbreaker" Question — Assumptions?
+              <span class="q-sub">الافتراضات والمتطلبات</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <table>
+              <thead><tr><th>Assumption</th><th>Meaning</th><th>Violation Consequence</th></tr></thead>
+              <tbody>
+                <tr><td class="gold">Linearity</td><td>X and y have a linear relationship</td><td class="red">Model is fundamentally wrong</td></tr>
+                <tr><td class="gold">Homoscedasticity</td><td>Residuals have constant variance</td><td class="red">Inefficient coefficient estimates</td></tr>
+                <tr><td class="gold">Normality</td><td>Residuals are normally distributed</td><td class="red">Invalid significance tests</td></tr>
+                <tr><td class="gold">Independence</td><td>No correlation between observations</td><td class="red">Overly optimistic p-values</td></tr>
+                <tr><td class="red">★ Multicollinearity</td><td>No X column predicts another X column</td><td class="red">Coefficients become unstable / meaningless</td></tr>
+              </tbody>
+            </table>
+            <p>The <strong>biggest dealbreaker unique to MLR</strong> is <em>Multicollinearity</em> — this is exactly why the Dummy Variable Trap is so dangerous. If State_NY + State_CA + State_FL = 1 always, they can perfectly predict each other, making the matrix inversion impossible.</p>
+            <div class="qa-answer ara-ans">
+              عندك 5 افتراضات لازم تتحقق. الأهم والأخطر في الـ MLR هو الـ Multicollinearity: ده لما عمودين من أعمدة الـ X بيتنبئوا ببعض. ده بيكسر الحسابات الرياضية بشكل كامل. عشان كده قاعدة n-1 في الـ Dummy Variables مهمة جداً.
+            </div>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="qa-card full">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon purple">5</div>
+            <div class="qa-q-text">
+              The "Control Knobs" Question — Hyperparameters?
+              <span class="q-sub">إيه الـ Hyperparameters؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Answer: None (for standard sklearn LinearRegression).</strong></p>
+            <p>The standard <code class="code-inline">LinearRegression()</code> class in scikit-learn is a <strong>brute-force mathematical solution</strong>. It solves one equation once with zero iteration. There's no learning rate, no depth, no epochs to tune.</p>
+            <p><strong>The "tuning" happens BEFORE you run the model</strong> — during <em>Backward Elimination</em>, where <em>you</em> act as the tuning knob by removing low-significance features based on their P-value. The human performs the optimization, not the algorithm.</p>
+            <div class="qa-answer ara-ans">
+              <strong>مفيش Hyperparameters!</strong> الـ LinearRegression في sklearn بيحل معادلة رياضية واحدة مرة واحدة — مش بيكرر ومش بيحتاج Learning Rate أو أي ضبط. الـ "تيونينج" بتاعه بيحصل قبل الموديل من خلال الـ Backward Elimination — إنت نفسك بتشيل الأعمدة الوحشة بإيدك بناءً على الـ P-value. إنت الـ Hyperparameter!
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end qa-grid -->
+    </div>
+  </div><!-- end page-concepts -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: MEMORY TIPS                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-memory" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">MEM</div>
+        <div>
+          <div class="section-title">Memory Tips &amp; Mnemonics</div>
+          <div class="section-subtitle">حيل للحفظ — اختصارات وطرق تساعدك تفتكر</div>
+        </div>
+      </div>
+
+      <div class="memory-grid">
+        <div class="memory-card gold-card">
+          <div class="memory-emoji">🎯</div>
+          <h4>The "ILEST" Pipeline</h4>
+          <p>Every sklearn model follows the exact same 3-step API:</p>
+          <span class="mono">Import → .fit() → .predict()</span>
+          <p style="margin-top:8px; font-size:13px; color: var(--text-dim)">مهما كان الموديل — دايمًا 3 خطوات: Import الكلاس، .fit() على التريننج، .predict() على التست.</p>
+        </div>
+
+        <div class="memory-card teal-card">
+          <div class="memory-emoji">🎲</div>
+          <h4>n-1 Rule for Dummies</h4>
+          <p>Dummy Trap = "One Too Many". Always use <strong>n categories − 1</strong> columns.</p>
+          <span class="mono">3 states → 2 dummy columns</span>
+          <p style="margin-top:8px; font-size:13px; color: var(--text-dim)">قاعدة الـ n-1: عندك 3 ولايات → عمل 2 أعمدة بس. الأخيرة بتتحسب لوحدها.</p>
+        </div>
+
+        <div class="memory-card blue-card">
+          <div class="memory-emoji">🔢</div>
+          <h4>iloc Cheat Sheet</h4>
+          <p><code class="code-inline">[:, :-1]</code> = all rows, all cols except last</p>
+          <span class="mono">[:, -1] = last column only</span>
+          <p style="margin-top:8px; font-size:13px; color: var(--text-dim)">فكر فيها كالتالي: <code>:</code> = كل حاجة، <code>-1</code> = الأخير، <code>:-1</code> = كل حاجة إلا الأخير.</p>
+        </div>
+
+        <div class="memory-card red-card">
+          <div class="memory-emoji">📊</div>
+          <h4>P-value Threshold</h4>
+          <p>The magic number is <strong>0.05</strong> (5% significance level).</p>
+          <span class="mono">P &lt; 0.05 → Keep · P &gt; 0.05 → Remove</span>
+          <p style="margin-top:8px; font-size:13px; color: var(--text-dim)">فكر فيه كـ "احتمال إن العمود ده بيخترع": P=0.99 يعني 99% فرصة إنه بيخترع نتائجه.</p>
+        </div>
+
+        <div class="memory-card purple-card">
+          <div class="memory-emoji">🚫</div>
+          <h4>NO Scaling for LR</h4>
+          <p>Linear Regression — <em>never</em> needs StandardScaler. The coefficients self-adjust.</p>
+          <span class="mono">LinearRegression → No scaling needed</span>
+          <p style="margin-top:8px; font-size:13px; color: var(--text-dim)">اربط الأمر كده: SVM / KNN / NeuralNets = محتاجين Scaling. LinearRegression = لأ.</p>
+        </div>
+
+        <div class="memory-card green-card">
+          <div class="memory-emoji">🪟</div>
+          <h4>The "Sheet of Glass" Analogy</h4>
+          <p>Simple LR = line in 2D. Multiple LR = flat sheet sliding through a 3D cloud.</p>
+          <span class="mono">More features = higher-dimensional "glass"</span>
+          <p style="margin-top:8px; font-size:13px; color: var(--text-dim)">لو عندك 2 features تخيل صفيحة زجاج في 3D. لو عندك 5 features — نفس الفكرة بس في الـ 6D (مش قادر تتخيله بس الرياضيات بتشتغل 😄).</p>
+        </div>
+      </div>
+
+      <!-- Code snippet memory -->
+      <div style="margin-top: 40px;">
+        <div class="section-title" style="font-size:18px; margin-bottom:20px;">Code Skeleton — The Pattern to Memorize</div>
+        <div class="code-wrap">
+          <div class="code-header">
+            <span class="filename">skeleton.py — commit this to memory</span>
+            <span class="phase-badge">MEMORIZE THIS</span>
+          </div>
+          <div class="code-body"><pre><span class="cm"># ── 1. IMPORT ─────────────────────────</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np, pandas <span class="kw">as</span> pd
+
+<span class="cm"># ── 2. LOAD ──────────────────────────</span>
+<span class="var">ds</span> <span class="op">=</span> pd.<span class="fn">read_csv</span>(<span class="str">'data.csv'</span>)
+<span class="var">X</span> <span class="op">=</span> <span class="var">ds</span>.iloc[:, :-<span class="num">1</span>].values
+<span class="var">y</span> <span class="op">=</span> <span class="var">ds</span>.iloc[:, -<span class="num">1</span>].values
+
+<span class="cm"># ── 3. ENCODE (if categorical columns) ─</span>
+<span class="kw">from</span> sklearn.compose <span class="kw">import</span> <span class="cls">ColumnTransformer</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">OneHotEncoder</span>
+<span class="var">ct</span> <span class="op">=</span> <span class="cls">ColumnTransformer</span>([(<span class="str">'enc'</span>, <span class="cls">OneHotEncoder</span>(), [<span class="num">3</span>])], remainder<span class="op">=</span><span class="str">'passthrough'</span>)
+<span class="var">X</span> <span class="op">=</span> np.<span class="fn">array</span>(<span class="var">ct</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>))
+
+<span class="cm"># ── 4. SPLIT ─────────────────────────</span>
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="cls">train_test_split</span>
+<span class="var">X_train</span>, <span class="var">X_test</span>, <span class="var">y_train</span>, <span class="var">y_test</span> <span class="op">=</span> <span class="fn">train_test_split</span>(<span class="var">X</span>, <span class="var">y</span>, test_size<span class="op">=</span><span class="num">0.2</span>, random_state<span class="op">=</span><span class="num">0</span>)
+
+<span class="cm"># ── 5. TRAIN ─────────────────────────</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+<span class="var">reg</span> <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(<span class="var">X_train</span>, <span class="var">y_train</span>)
+
+<span class="cm"># ── 6. PREDICT & EVALUATE ────────────</span>
+<span class="var">y_pred</span> <span class="op">=</span> <span class="var">reg</span>.<span class="fn">predict</span>(<span class="var">X_test</span>)</pre></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: AI TIPS                                           -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-aitips" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">AI</div>
+        <div>
+          <div class="section-title">AI Tips — Next Steps to Try</div>
+          <div class="section-subtitle">خطوات إضافية تجربها عشان تفهم أعمق</div>
+        </div>
+      </div>
+
+      <div class="tips-hero">
+        <h2>🤖 Go Beyond the Basics</h2>
+        <p>These are extensions and experiments to run on top of your existing MLR project. Each one builds a new mental model and moves you closer to production-grade work.</p>
+      </div>
+
+      <div class="tips-grid">
+
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(45,212,191,0.1)">📈</div>
+            <div>
+              <div class="tip-card-title">Tip 1: Print the Coefficients Table</div>
+              <div class="tip-card-subtitle">اطبع جدول الـ Coefficients وافهم كل عمود</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>After training, inspect what the model learned. This is the most educational step — see which feature has the most "weight" on profit.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="var">coef_df</span> <span class="op">=</span> pd.<span class="cls">DataFrame</span>({
+    <span class="str">'Feature'</span>: [<span class="str">'State_CA'</span>, <span class="str">'State_FL'</span>, <span class="str">'R&D'</span>, <span class="str">'Admin'</span>, <span class="str">'Mkt'</span>],
+    <span class="str">'Coefficient'</span>: <span class="var">regressor</span>.coef_
+}).sort_values(<span class="str">'Coefficient'</span>, ascending<span class="op">=</span><span class="kw">False</span>)
+<span class="kw">print</span>(<span class="var">coef_df</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(212,168,67,0.1)">🎯</div>
+            <div>
+              <div class="tip-card-title">Tip 2: Predict a Single New Input</div>
+              <div class="tip-card-subtitle">جرب تتنبأ بحاجة جديدة بإيدك</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Instead of only predicting on X_test, manually create a new startup's data and predict its profit. This makes the model feel <em>real</em>.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="cm"># [State_CA, State_FL, R&D, Admin, Marketing]</span>
+<span class="var">new_startup</span> <span class="op">=</span> [[<span class="num">1</span>, <span class="num">0</span>, <span class="num">160000</span>, <span class="num">130000</span>, <span class="num">300000</span>]]
+<span class="var">predicted</span> <span class="op">=</span> <span class="var">regressor</span>.<span class="fn">predict</span>(<span class="var">new_startup</span>)
+<span class="kw">print</span>(<span class="str">f'Predicted profit: $<span class="num">{predicted[0]:.2f}</span>'</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(96,165,250,0.1)">🔄</div>
+            <div>
+              <div class="tip-card-title">Tip 3: Automate Backward Elimination</div>
+              <div class="tip-card-subtitle">اعمل Backward Elimination أوتوماتيك بـ loop</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Instead of manually removing columns one at a time, write a loop that does it automatically until all P-values &lt; 0.05.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">import</span> statsmodels.api <span class="kw">as</span> sm
+<span class="kw">def</span> <span class="fn">backward_elim</span>(X, y, sl<span class="op">=</span><span class="num">0.05</span>):
+    X <span class="op">=</span> np.<span class="fn">append</span>(np.<span class="fn">ones</span>((<span class="op">len</span>(X),<span class="num">1</span>)),X,axis<span class="op">=</span><span class="num">1</span>)
+    <span class="kw">while True</span>:
+        m <span class="op">=</span> sm.<span class="cls">OLS</span>(y,X).<span class="fn">fit</span>()
+        p <span class="op">=</span> m.pvalues
+        <span class="kw">if</span> p.<span class="fn">max</span>() <span class="op">></span> sl:
+            X <span class="op">=</span> np.<span class="fn">delete</span>(X, p.<span class="fn">argmax</span>(), axis<span class="op">=</span><span class="num">1</span>)
+        <span class="kw">else</span>: <span class="kw">break</span>
+    <span class="kw">return</span> X
+<span class="var">X_opt</span> <span class="op">=</span> <span class="fn">backward_elim</span>(<span class="var">X</span>, <span class="var">y</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(248,113,113,0.1)">🌡️</div>
+            <div>
+              <div class="tip-card-title">Tip 4: Check for Outliers (IQR Method)</div>
+              <div class="tip-card-subtitle">اشيل الـ Outliers قبل التدريب</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Before fitting, detect and optionally remove outliers using the IQR fence method. This is essential to protect OLS from being tilted.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="var">Q1</span> <span class="op">=</span> <span class="var">dataset</span>[<span class="str">'Profit'</span>].quantile(<span class="num">0.25</span>)
+<span class="var">Q3</span> <span class="op">=</span> <span class="var">dataset</span>[<span class="str">'Profit'</span>].quantile(<span class="num">0.75</span>)
+<span class="var">IQR</span> <span class="op">=</span> <span class="var">Q3</span> <span class="op">-</span> <span class="var">Q1</span>
+<span class="var">clean</span> <span class="op">=</span> <span class="var">dataset</span>[
+    (<span class="var">dataset</span>[<span class="str">'Profit'</span>] <span class="op">>=</span> <span class="var">Q1</span> <span class="op">-</span> <span class="num">1.5</span><span class="op">*</span><span class="var">IQR</span>) <span class="op">&</span>
+    (<span class="var">dataset</span>[<span class="str">'Profit'</span>] <span class="op"><=</span> <span class="var">Q3</span> <span class="op">+</span> <span class="num">1.5</span><span class="op">*</span><span class="var">IQR</span>)
+]</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(192,132,252,0.1)">📉</div>
+            <div>
+              <div class="tip-card-title">Tip 5: Plot Residuals</div>
+              <div class="tip-card-subtitle">ارسم الـ Residuals وافحص الافتراضات</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Plot residuals (errors) to visually verify the <em>Linearity</em> and <em>Homoscedasticity</em> assumptions. Should look like random scatter around zero.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="var">residuals</span> <span class="op">=</span> <span class="var">y_test</span> <span class="op">-</span> <span class="var">y_pred</span>
+plt.<span class="fn">scatter</span>(<span class="var">y_pred</span>, <span class="var">residuals</span>, color<span class="op">=</span><span class="str">'#2dd4bf'</span>, alpha<span class="op">=</span><span class="num">0.6</span>)
+plt.<span class="fn">axhline</span>(y<span class="op">=</span><span class="num">0</span>, color<span class="op">=</span><span class="str">'red'</span>, linestyle<span class="op">=</span><span class="str">'--'</span>)
+plt.<span class="fn">xlabel</span>(<span class="str">'Predicted'</span>); plt.<span class="fn">ylabel</span>(<span class="str">'Residuals'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Residual Plot'</span>); plt.<span class="fn">show</span>()</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(74,222,128,0.1)">🔍</div>
+            <div>
+              <div class="tip-card-title">Tip 6: Check Multicollinearity (VIF)</div>
+              <div class="tip-card-subtitle">افحص الـ Multicollinearity بـ VIF</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Use <strong>Variance Inflation Factor (VIF)</strong> to numerically detect multicollinearity. VIF &gt; 10 is a red flag; VIF &gt; 5 is worth investigating.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> statsmodels.stats.outliers_influence <span class="kw">import</span> variance_inflation_factor
+<span class="var">vif_df</span> <span class="op">=</span> pd.<span class="cls">DataFrame</span>()
+<span class="var">vif_df</span>[<span class="str">'Feature'</span>] <span class="op">=</span> pd.<span class="cls">DataFrame</span>(<span class="var">X_train</span>).columns
+<span class="var">vif_df</span>[<span class="str">'VIF'</span>] <span class="op">=</span> [<span class="fn">variance_inflation_factor</span>(
+    <span class="var">X_train</span>, i) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="var">X_train</span>.shape[<span class="num">1</span>])]
+<span class="kw">print</span>(<span class="var">vif_df</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end tips-grid -->
+    </div>
+  </div><!-- end page-aitips -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: FULL PRO PROJECT                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-pro" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">PRO</div>
+        <div>
+          <div class="section-title">Full Professional Project Pipeline</div>
+          <div class="section-subtitle">المشروع الكامل — من الداتا للـ Production</div>
+        </div>
+      </div>
+
+      <div class="timeline">
+
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-label">Phase A — Exploratory Data Analysis (EDA) <span class="badge" style="background:rgba(45,212,191,0.1);color:var(--teal);border:1px solid var(--teal-dim)">pandas + seaborn</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="var">dataset</span>.<span class="fn">describe</span>()                <span class="cm"># Stats for every column</span>
+<span class="var">dataset</span>.<span class="fn">isnull</span>().<span class="fn">sum</span>()            <span class="cm"># Check for missing values</span>
+<span class="var">dataset</span>.<span class="fn">corr</span>()                    <span class="cm"># Correlation matrix</span>
+
+<span class="kw">import</span> seaborn <span class="kw">as</span> sns
+sns.<span class="fn">heatmap</span>(<span class="var">dataset</span>.<span class="fn">corr</span>(), annot<span class="op">=</span><span class="kw">True</span>, fmt<span class="op">=</span><span class="str">'.2f'</span>, cmap<span class="op">=</span><span class="str">'coolwarm'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Correlation Heatmap'</span>); plt.<span class="fn">show</span>()</pre></div></div>
+          <p style="font-size:14px; color: var(--text-dim); margin-top:8px">EDA always comes first. Look at distributions, check correlations, find nulls. The heatmap immediately reveals potential multicollinearity between features. | الـ EDA دايمًا أول خطوة — شوف الداتا بعينيك قبل أي موديل.</p>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot gold"></div>
+          <div class="timeline-label">Phase B — Evaluation Metrics <span class="badge" style="background:rgba(212,168,67,0.1);color:var(--gold);border:1px solid var(--gold-dim)">sklearn.metrics</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="kw">from</span> sklearn.metrics <span class="kw">import</span> <span class="cls">r2_score</span>, mean_absolute_error, mean_squared_error
+
+<span class="var">r2</span>   <span class="op">=</span> <span class="fn">r2_score</span>(<span class="var">y_test</span>, <span class="var">y_pred</span>)        <span class="cm"># R² — variance explained (0 to 1)</span>
+<span class="var">mae</span>  <span class="op">=</span> <span class="fn">mean_absolute_error</span>(<span class="var">y_test</span>, <span class="var">y_pred</span>)  <span class="cm"># MAE — avg $ error</span>
+<span class="var">mse</span>  <span class="op">=</span> <span class="fn">mean_squared_error</span>(<span class="var">y_test</span>, <span class="var">y_pred</span>)   <span class="cm"># MSE — penalizes big errors</span>
+<span class="var">rmse</span> <span class="op">=</span> np.<span class="fn">sqrt</span>(<span class="var">mse</span>)                     <span class="cm"># RMSE — same unit as target</span>
+
+<span class="kw">print</span>(<span class="str">f'R²   = {r2:.4f}   → Model explains {r2*100:.1f}% of variance'</span>)
+<span class="kw">print</span>(<span class="str">f'MAE  = ${mae:,.0f}'</span>)
+<span class="kw">print</span>(<span class="str">f'RMSE = ${rmse:,.0f}'</span>)</pre></div></div>
+
+          <div class="metric-row">
+            <div class="metric-card">
+              <div class="metric-name">R²</div>
+              <div class="metric-value" style="color:var(--teal)">0.93</div>
+              <div class="metric-desc">93% of variance explained. Closer to 1.0 = better</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-name">MAE</div>
+              <div class="metric-value" style="color:var(--gold)">$7,282</div>
+              <div class="metric-desc">Average absolute prediction error in dollars</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-name">MSE</div>
+              <div class="metric-value" style="color:var(--red)">82M</div>
+              <div class="metric-desc">Penalizes large errors heavily (squared)</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-name">RMSE</div>
+              <div class="metric-value" style="color:var(--purple)">$9,068</div>
+              <div class="metric-desc">√MSE — back in dollar units, most intuitive</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot blue"></div>
+          <div class="timeline-label">Phase C — Cross-Validation <span class="badge" style="background:rgba(96,165,250,0.1);color:var(--blue);border:1px solid var(--blue-dim)">K-Fold</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="cls">cross_val_score</span>
+
+<span class="var">scores</span> <span class="op">=</span> <span class="fn">cross_val_score</span>(
+    estimator<span class="op">=</span><span class="var">regressor</span>,
+    X<span class="op">=</span><span class="var">X</span>, y<span class="op">=</span><span class="var">y</span>,
+    cv<span class="op">=</span><span class="num">10</span>,              <span class="cm"># 10-Fold Cross-Validation</span>
+    scoring<span class="op">=</span><span class="str">'r2'</span>
+)
+<span class="kw">print</span>(<span class="str">f'Mean R²: {scores.mean():.4f}'</span>)
+<span class="kw">print</span>(<span class="str">f'Std Dev: {scores.std():.4f}'</span>)   <span class="cm"># Low std = stable model</span></pre></div></div>
+          <p style="font-size:14px; color: var(--text-dim); margin-top:8px">Cross-validation splits your data 10 times differently and averages the score — far more reliable than a single train/test split. If the std dev is high, your model is unstable. | الـ Cross-Validation بيقيس الموديل 10 مرات بتقسيمات مختلفة — أدق بكتير من مرة واحدة.</p>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot purple"></div>
+          <div class="timeline-label">Phase D — Regularization (Ridge / Lasso) <span class="badge" style="background:rgba(192,132,252,0.1);color:var(--purple);border:1px solid #4a1d9c">Advanced</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">Ridge</span>, <span class="cls">Lasso</span>
+
+<span class="cm"># Ridge (L2): shrinks coefficients but never to zero</span>
+<span class="var">ridge</span> <span class="op">=</span> <span class="cls">Ridge</span>(alpha<span class="op">=</span><span class="num">1.0</span>).<span class="fn">fit</span>(<span class="var">X_train</span>, <span class="var">y_train</span>)
+
+<span class="cm"># Lasso (L1): can shrink coefficients TO zero (auto feature selection!)</span>
+<span class="var">lasso</span> <span class="op">=</span> <span class="cls">Lasso</span>(alpha<span class="op">=</span><span class="num">1.0</span>).<span class="fn">fit</span>(<span class="var">X_train</span>, <span class="var">y_train</span>)
+
+<span class="kw">print</span>(<span class="str">"Lasso coefs (zeros = removed features):"</span>, <span class="var">lasso</span>.coef_)</pre></div></div>
+
+          <table>
+            <thead><tr><th>Method</th><th>Penalty</th><th>Feature Selection?</th><th>When to Use</th></tr></thead>
+            <tbody>
+              <tr><td class="gold">Plain LR</td><td>None</td><td class="red">No</td><td>Clean data, no multicollinearity</td></tr>
+              <tr><td class="blue">Ridge (L2)</td><td>α·Σb²</td><td class="red">No (shrinks)</td><td>Many correlated features</td></tr>
+              <tr><td class="purple">Lasso (L1)</td><td>α·Σ|b|</td><td class="green">Yes (zeros out)</td><td>You suspect many useless features</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot red"></div>
+          <div class="timeline-label">Phase E — Visualization <span class="badge" style="background:rgba(248,113,113,0.1);color:var(--red);border:1px solid var(--red-dim)">matplotlib</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="cm"># Actual vs Predicted scatter plot</span>
+plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">8</span>,<span class="num">6</span>))
+plt.<span class="fn">scatter</span>(<span class="var">y_test</span>, <span class="var">y_pred</span>, color<span class="op">=</span><span class="str">'#2dd4bf'</span>, alpha<span class="op">=</span><span class="num">0.7</span>)
+plt.<span class="fn">plot</span>([<span class="var">y_test</span>.<span class="fn">min</span>(), <span class="var">y_test</span>.<span class="fn">max</span>()],
+         [<span class="var">y_test</span>.<span class="fn">min</span>(), <span class="var">y_test</span>.<span class="fn">max</span>()], <span class="str">'r--'</span>, lw<span class="op">=</span><span class="num">2</span>)  <span class="cm"># Perfect-prediction line</span>
+plt.<span class="fn">xlabel</span>(<span class="str">'Actual Profit ($)'</span>)
+plt.<span class="fn">ylabel</span>(<span class="str">'Predicted Profit ($)'</span>)
+plt.<span class="fn">title</span>(<span class="str">f'MLR: Actual vs Predicted  |  R² = {r2:.3f}'</span>)
+plt.<span class="fn">tight_layout</span>(); plt.<span class="fn">show</span>()</pre></div></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-label">Phase F — Feature Importance Bar Chart</div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="var">feature_names</span> <span class="op">=</span> [<span class="str">'State_CA'</span>, <span class="str">'State_FL'</span>, <span class="str">'R&D Spend'</span>, <span class="str">'Admin'</span>, <span class="str">'Marketing'</span>]
+<span class="var">importance</span> <span class="op">=</span> np.<span class="fn">abs</span>(<span class="var">regressor</span>.coef_)  <span class="cm"># Absolute value = "strength"</span>
+
+plt.<span class="fn">barh</span>(<span class="var">feature_names</span>, <span class="var">importance</span>, color<span class="op">=</span><span class="str">'#d4a843'</span>)
+plt.<span class="fn">xlabel</span>(<span class="str">'|Coefficient| — Feature Importance'</span>)
+plt.<span class="fn">title</span>(<span class="str">'Which features matter most?'</span>)
+plt.<span class="fn">tight_layout</span>(); plt.<span class="fn">show</span>()</pre></div></div>
+          <p style="font-size:14px; color: var(--text-dim); margin-top:8px">This chart tells you at a glance which predictor drives profit the most. Usually R&D Spend dominates in the 50_Startups dataset. | الشارت ده بيقولك فوراً: إيه أهم عامل في التنبؤ بالـ Profit؟</p>
+        </div>
+
+      </div><!-- end timeline -->
+
+      <div class="info-box tip" style="margin-top:20px">
+        <div class="info-box-icon">🏆</div>
+        <div class="info-box-content">
+          <div class="title">Full Pro Project Checklist</div>
+          <p>✅ EDA + Correlation Heatmap &nbsp;|&nbsp; ✅ Outlier detection (IQR) &nbsp;|&nbsp; ✅ One-Hot Encoding (n-1) &nbsp;|&nbsp; ✅ Backward Elimination (P-values) &nbsp;|&nbsp; ✅ R², MAE, RMSE metrics &nbsp;|&nbsp; ✅ 10-Fold Cross-Validation &nbsp;|&nbsp; ✅ VIF check for multicollinearity &nbsp;|&nbsp; ✅ Residual plot &nbsp;|&nbsp; ✅ Actual vs Predicted scatter &nbsp;|&nbsp; ✅ Feature importance chart</p>
+          <div class="ara">كمل كل الخطوات دي وهيبقى عندك مشروع MLR كامل مهني — مش مجرد fit + predict.</div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end page-pro -->
+
+</div><!-- end main -->
+
+<script>
+// ── Page Navigation ──
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── Q&A Accordion ──
+function toggleQA(el) {
+  const ans = el.nextElementSibling;
+  const toggle = el.querySelector('.qa-toggle');
+  const isOpen = ans.classList.contains('open');
+  ans.classList.toggle('open', !isOpen);
+  toggle.style.transform = isOpen ? 'rotate(0)' : 'rotate(180deg)';
+}
+
+// ── Progress Bar ──
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrollTop = doc.scrollTop || document.body.scrollTop;
+  const scrollHeight = doc.scrollHeight - doc.clientHeight;
+  const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+  document.getElementById('progress').style.width = pct + '%';
+});
+
+// ── Fade in sections on scroll ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('fade-in');
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.section').forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
