@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polynomial Regression — Study Guide | Sam's ML Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1f2533;
+    --gold: #d4a843;
+    --gold-dim: #8a6a22;
+    --teal: #2dd4bf;
+    --teal-dim: #134e4a;
+    --red: #f87171;
+    --red-dim: #450a0a;
+    --blue: #60a5fa;
+    --blue-dim: #1e3a5f;
+    --green: #4ade80;
+    --green-dim: #052e16;
+    --purple: #c084fc;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #475569;
+    --arabic: #f0c070;
+    --orange: #fb923c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 240px;
+    background: rgba(17,19,24,0.97);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 100;
+    overflow-y: auto;
+  }
+
+  .sidebar-brand {
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+
+  .sidebar-brand .title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .sidebar-brand .sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .sidebar-brand .sub2 {
+    font-size: 10px;
+    color: var(--teal-dim);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--teal);
+    opacity: 0.6;
+  }
+
+  .nav-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 12px 20px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .nav-item:hover, .nav-item.active {
+    color: var(--gold);
+    border-left-color: var(--gold);
+    background: rgba(212,168,67,0.05);
+  }
+
+  .nav-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 240px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    padding: 60px 60px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::after {
+    content: 'ŷ = b₀ + b₁x + b₂x² + b₃x³ + b₄x⁴';
+    position: absolute;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    color: var(--gold-dim);
+    opacity: 0.4;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .header .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header .tag::before {
+    content: '';
+    display: block;
+    width: 20px; height: 1px;
+    background: var(--teal);
+  }
+
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+  }
+
+  .header h1 span { color: var(--gold); }
+
+  .header .arabic-title {
+    font-size: 20px;
+    color: var(--arabic);
+    margin-top: 8px;
+    font-style: italic;
+    direction: rtl;
+    font-family: 'Crimson Pro', serif;
+  }
+
+  .header .meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .meta-pill span { color: var(--gold); }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding: 60px 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+
+  .section-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .section-subtitle {
+    font-size: 14px;
+    color: var(--arabic);
+    margin-top: 4px;
+    direction: rtl;
+    font-style: italic;
+  }
+
+  /* ── CODE BLOCKS ── */
+  .code-wrap {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-header .filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .code-header .phase-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--teal);
+    border: 1px solid var(--teal-dim);
+  }
+
+  .code-body {
+    padding: 20px;
+    overflow-x: auto;
+  }
+
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: #abb2bf;
+    white-space: pre;
+  }
+
+  /* Syntax */
+  .kw  { color: #c678dd; }
+  .fn  { color: #61afef; }
+  .cls { color: #e5c07b; }
+  .str { color: #98c379; }
+  .num { color: #d19a66; }
+  .cm  { color: #5c6370; font-style: italic; }
+  .op  { color: #56b6c2; }
+  .var { color: #e06c75; }
+  .bi  { color: #56b6c2; }
+
+  /* ── ANNOTATION ── */
+  .annotation {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 8px 0 24px;
+  }
+
+  .ann-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+
+  .ann-block.eng { border-left: 3px solid var(--teal); }
+  .ann-block.ara { border-left: 3px solid var(--arabic); direction: rtl; }
+
+  .ann-block .lang-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .ann-block.eng .lang-tag { color: var(--teal); }
+  .ann-block.ara .lang-tag { color: var(--arabic); }
+
+  .ann-block p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  /* ── Q&A CARDS ── */
+  .qa-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .qa-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .qa-card.full { grid-column: 1 / -1; }
+
+  .qa-question {
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+
+  .qa-question:hover { background: var(--surface2); }
+
+  .qa-q-icon {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .qa-q-icon.gold   { background: rgba(212,168,67,0.15); color: var(--gold);   border: 1px solid var(--gold-dim); }
+  .qa-q-icon.teal   { background: rgba(45,212,191,0.1);  color: var(--teal);   border: 1px solid var(--teal-dim); }
+  .qa-q-icon.red    { background: rgba(248,113,113,0.1); color: var(--red);    border: 1px solid var(--red-dim); }
+  .qa-q-icon.blue   { background: rgba(96,165,250,0.1);  color: var(--blue);   border: 1px solid var(--blue-dim); }
+  .qa-q-icon.purple { background: rgba(192,132,252,0.1); color: var(--purple); border: 1px solid #4a1d9c; }
+  .qa-q-icon.orange { background: rgba(251,146,60,0.1);  color: var(--orange); border: 1px solid #92400e; }
+
+  .qa-q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .qa-q-text .q-sub {
+    font-family: 'Crimson Pro', serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+    direction: rtl;
+  }
+
+  .qa-toggle { color: var(--text-dim); font-size: 14px; transition: transform 0.3s; margin-top: 3px; }
+
+  .qa-answer {
+    display: none;
+    padding: 0 18px 18px 56px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+
+  .qa-answer.open { display: block; }
+
+  .qa-answer p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 8px;
+  }
+
+  .qa-answer .ara-ans {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(240,192,112,0.05);
+    border: 1px solid rgba(240,192,112,0.15);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--arabic);
+    direction: rtl;
+    line-height: 1.7;
+  }
+
+  /* ── INFO BOXES ── */
+  .info-box {
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin: 20px 0;
+  }
+
+  .info-box.warn   { background: rgba(212,168,67,0.07);  border: 1px solid rgba(212,168,67,0.2); }
+  .info-box.danger { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.2); }
+  .info-box.tip    { background: rgba(45,212,191,0.07);  border: 1px solid rgba(45,212,191,0.2); }
+  .info-box.info   { background: rgba(96,165,250,0.07);  border: 1px solid rgba(96,165,250,0.2); }
+
+  .info-box-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+
+  .info-box-content .title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .info-box.warn  .title { color: var(--gold); }
+  .info-box.danger .title { color: var(--red); }
+  .info-box.tip   .title { color: var(--teal); }
+  .info-box.info  .title { color: var(--blue); }
+
+  .info-box-content p { font-size: 14px; color: var(--text-muted); line-height: 1.65; }
+  .info-box-content .ara { font-size: 13px; color: var(--arabic); direction: rtl; margin-top: 6px; font-style: italic; }
+
+  /* ── MEMORY TIPS ── */
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .memory-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .memory-card::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.04;
+  }
+
+  .memory-card.gold-card::before   { background: var(--gold); }
+  .memory-card.teal-card::before   { background: var(--teal); }
+  .memory-card.blue-card::before   { background: var(--blue); }
+  .memory-card.red-card::before    { background: var(--red); }
+  .memory-card.purple-card::before { background: var(--purple); }
+  .memory-card.green-card::before  { background: var(--green); }
+  .memory-card.orange-card::before { background: var(--orange); }
+
+  .memory-emoji { font-size: 22px; margin-bottom: 10px; }
+
+  .memory-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .memory-card p  { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; }
+  .memory-card .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); margin-top: 6px; display: block; }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+    margin-top: 24px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--teal), var(--gold), var(--purple));
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 32px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -28px; top: 4px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    background: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .timeline-dot.gold   { background: var(--gold); }
+  .timeline-dot.purple { background: var(--purple); }
+  .timeline-dot.red    { background: var(--red); }
+  .timeline-dot.blue   { background: var(--blue); }
+  .timeline-dot.green  { background: var(--green); }
+  .timeline-dot.orange { background: var(--orange); }
+
+  .timeline-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .timeline-label .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ── AI TIPS PAGE ── */
+  .tips-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tips-hero::before {
+    content: '📈';
+    position: absolute;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 64px;
+    opacity: 0.08;
+  }
+
+  .tips-hero h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .tips-hero p { font-size: 15px; color: var(--text-muted); max-width: 640px; }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .tip-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .tip-card:hover { border-color: var(--gold-dim); }
+
+  .tip-card-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tip-card-icon {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .tip-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .tip-card-subtitle { font-size: 12px; color: var(--text-dim); margin-top: 1px; direction: rtl; }
+
+  .tip-card-body { padding: 16px 18px; }
+  .tip-card-body p { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.65; }
+
+  /* ── FORMULA BOX ── */
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: var(--gold);
+    text-align: center;
+    margin: 16px 0;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface);
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+  }
+  td.mono   { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--teal); }
+  td.gold   { color: var(--gold); }
+  td.red    { color: var(--red); }
+  td.green  { color: var(--green); }
+  td.blue   { color: var(--blue); }
+
+  /* ── COMPARISON BOX ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+  }
+
+  .compare-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .compare-card.mlr h4 { color: var(--blue); }
+  .compare-card.plr h4 { color: var(--gold); }
+
+  .compare-card li {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    list-style: none;
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.55;
+  }
+
+  .compare-card li::before { content: '→'; position: absolute; left: 0; color: var(--text-dim); }
+
+  /* ── DEGREE LADDER ── */
+  .degree-ladder {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+  }
+
+  .degree-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .degree-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    width: 36px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+
+  .degree-curve {
+    font-size: 13px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .degree-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--teal);
+    flex: 1;
+  }
+
+  .degree-risk {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 240px; right: 0;
+    height: 2px;
+    background: var(--border);
+    z-index: 200;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--teal), var(--gold));
+    width: 0%;
+    transition: width 0.3s;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fadeUp 0.5s ease forwards; }
+
+  .highlight { color: var(--gold); font-weight: 600; }
+  .code-inline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--teal);
+  }
+
+  .step-badge {
+    display: inline-block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    padding: 2px 8px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .new-flag {
+    display: inline-block;
+    background: rgba(212,168,67,0.15);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.08em;
+  }
+
+  @media (max-width: 1100px) {
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; }
+    .header, .section { padding: 40px 30px; }
+    .annotation { grid-template-columns: 1fr; }
+    .qa-grid { grid-template-columns: 1fr; }
+    .tips-grid { grid-template-columns: 1fr; }
+    .memory-grid { grid-template-columns: 1fr 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .header::after { display: none; }
+    .progress-bar { left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="title">ML Notes</div>
+    <div class="sub">polynomial_regression.py</div>
+    <div class="sub2">↖ prev: multiple_linear_reg</div>
+  </div>
+
+  <div class="nav-label">Pages</div>
+  <a class="nav-item active" onclick="showPage('code', this)"><span class="dot"></span>Code Walkthrough</a>
+  <a class="nav-item" onclick="showPage('concepts', this)"><span class="dot"></span>6 Big Questions</a>
+  <a class="nav-item" onclick="showPage('memory', this)"><span class="dot"></span>Memory Tips</a>
+  <a class="nav-item" onclick="showPage('aitips', this)"><span class="dot"></span>AI Tips &amp; Next Steps</a>
+  <a class="nav-item" onclick="showPage('pro', this)"><span class="dot"></span>Full Pro Project</a>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="tag">Machine Learning · Regression Models</div>
+    <h1>Polynomial <span>Regression</span></h1>
+    <div class="arabic-title">الانحدار متعدد الحدود — لما الخط المستقيم مش كفاية</div>
+    <div class="meta">
+      <div class="meta-pill">dataset: <span>Position_Salaries.csv</span></div>
+      <div class="meta-pill">rows: <span>10</span></div>
+      <div class="meta-pill">degree: <span>4</span></div>
+      <div class="meta-pill">models: <span>LinReg + PolyReg</span></div>
+      <div class="meta-pill">prev: <span>Multiple Linear Regression</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: CODE WALKTHROUGH                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-code" class="page active">
+
+    <!-- PHASE 01 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">01</div>
+        <div>
+          <div class="section-title">Import Libraries</div>
+          <div class="section-subtitle">استيراد المكتبات — نفس الأدوات الـ 3 اللي بنبدأ بيهم دايمًا</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 01 — SETUP</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> pandas <span class="kw">as</span> pd</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><strong>numpy</strong> handles array math (the X_grid trick later uses it). <strong>matplotlib.pyplot</strong> draws the plots — the comparison between straight line vs. curve is the visual highlight of this whole notebook. <strong>pandas</strong> loads the CSV into a DataFrame so we can slice it with <code class="code-inline">iloc</code>. These 3 are the standard sklearn ML stack.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p>نفس الـ 3 مكتبات اللي بنفتح بيهم أي موديل — <strong>numpy</strong> للأرقام والمصفوفات، <strong>matplotlib</strong> للرسم (والرسم هنا مهم جداً عشان نشوف الفرق بين الخط والمنحنى)، <strong>pandas</strong> لقراءة الـ CSV. ملاحظة: مع الـ Polynomial Regression هيفضل نفس الترتيب في باقي الكورس.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 02 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">02</div>
+        <div>
+          <div class="section-title">Import the Dataset</div>
+          <div class="section-subtitle">تحميل الداتا — ليه بنبدأ من العمود رقم 1 مش 0؟</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 02 — DATA</span>
+        </div>
+        <div class="code-body"><pre><span class="var">dataset</span> <span class="op">=</span> pd.<span class="fn">read_csv</span>(<span class="str">'Position_Salaries.csv'</span>)
+<span class="var">X</span> <span class="op">=</span> <span class="var">dataset</span>.iloc[:, <span class="num">1</span>:-<span class="num">1</span>].values   <span class="cm"># columns 1 to second-last → Level column</span>
+<span class="var">y</span> <span class="op">=</span> <span class="var">dataset</span>.iloc[:, -<span class="num">1</span>].values       <span class="cm"># last column → Salary</span></pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><strong>Why <code class="code-inline">1:-1</code> and not <code class="code-inline">:-1</code>?</strong> The CSV has 3 columns: <em>Position</em> (text job title), <em>Level</em> (number 1–10), <em>Salary</em>. Column 0 (Position) is the job name in text — it's redundant because Level already encodes the rank numerically. So we skip it and take only Level as our feature. This is <strong>not</strong> the same as MLR where we took all columns except the last.</p>
+          <p style="margin-top:8px"><strong>No Train/Test Split!</strong> This dataset has only 10 rows. Splitting it would leave us training on ~8 samples — too few to learn anything. This dataset is a memorization task: fit a curve to all 10 salary bands exactly. We'll add split later in AI Tips.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p>الـ CSV عنده 3 أعمدة: <strong>Position</strong> (اسم الوظيفة بالنص) — <strong>Level</strong> (رقم من 1 لـ 10) — <strong>Salary</strong>. إحنا بناخد من العمود رقم 1 (مش 0) لأن العمود رقم 0 ده اسم الوظيفة — ومش محتاجينه، الـ Level بيعبّر عن نفس الحاجة بأرقام. </p>
+          <p style="margin-top:8px">لاحظ: <code class="code-inline">مفيش train_test_split</code> — الداتا 10 صفوف بس، لو قسّمناها هيفضل معانا 7 أو 8 صفوف للتدريب، ده قليل جداً. الهدف هنا مش التعميم، هو الـ interpolation والـ extrapolation. هنحل ده في صفحة الـ AI Tips.</p>
+        </div>
+      </div>
+
+      <div class="info-box warn">
+        <div class="info-box-icon">📋</div>
+        <div class="info-box-content">
+          <div class="title">Dataset Structure — Position_Salaries.csv</div>
+          <p>10 rows representing salary bands at a company: Business Analyst (Level 1, $45K) → CEO (Level 10, $1M). The <code class="code-inline">Position</code> column is just a label — <code class="code-inline">Level</code> is what the model uses as its single numeric feature.</p>
+          <div class="ara">الداتا بتحاكي سلّم رواتب شركة: من Business Analyst (مستوى 1، 45 ألف دولار) لـ CEO (مستوى 10، مليون دولار). السيناريو: موظف عنده خبرة 6.5 سنين في المستوى 6.5 — المرتب اللي يستاهله إيه؟</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 03 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">03</div>
+        <div>
+          <div class="section-title">Train Linear Regression <span class="new-flag">BASELINE</span></div>
+          <div class="section-subtitle">تدريب الانحدار الخطي — عشان نقارن بيه بعدين</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 03 — BASELINE MODEL</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+
+<span class="var">lin_reg</span> <span class="op">=</span> <span class="cls">LinearRegression</span>()
+<span class="var">lin_reg</span>.<span class="fn">fit</span>(<span class="var">X</span>, <span class="var">y</span>)</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p>This is identical to what we did in Simple Linear Regression — fit a straight line to the data. We are doing this <strong>on purpose as a baseline</strong>. We want to show that a straight line <em>fails</em> to capture the salary curve, which justifies switching to polynomial. Notice: we use <code class="code-inline">lin_reg</code> (not <code class="code-inline">lin_reg_2</code>) — that name is reserved for the polynomial version later.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p>ده بالظبط زي الـ Simple Linear Regression — خط مستقيم على الداتا. بنعمله عن قصد كـ <strong>Baseline</strong> (نقطة مقارنة). هدفنا نثبت إن الخط المستقيم مش بيشتغل كويس على الرواتب دي — وبعدين نجيب الـ Polynomial ونقارن. اسمه <code class="code-inline">lin_reg</code> عشان مش نبهّت على اسم <code class="code-inline">lin_reg_2</code> اللي هيجي بعدين.</p>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <div class="info-box-icon">💡</div>
+        <div class="info-box-content">
+          <div class="title">Why train Linear Regression first?</div>
+          <p>This is the scientific method applied to ML: establish a baseline → improve → compare. If you jump straight to Polynomial without showing the baseline fails, you can't claim Polynomial is "better". The visualizations in Phase 05 vs 06 tell this story.</p>
+          <div class="ara">ده منهج علمي: ابدأ بأبسط حل وثبّت إنه مش كافي، وبعدين قدّم الحل الأفضل. ده بيخلي التحليل بتاعك مقنع.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 04 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">04</div>
+        <div>
+          <div class="section-title">Train Polynomial Regression <span class="new-flag">NEW CONCEPT</span></div>
+          <div class="section-subtitle">تدريب الانحدار متعدد الحدود — الجزء الجديد اللي مفيش في MLR</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 04 — CORE CONCEPT</span>
+        </div>
+        <div class="code-body"><pre><span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">PolynomialFeatures</span>
+
+<span class="cm"># Step 1: Create the feature transformer (adds x², x³, x⁴ columns)</span>
+<span class="var">poly_reg</span> <span class="op">=</span> <span class="cls">PolynomialFeatures</span>(degree <span class="op">=</span> <span class="num">4</span>)
+
+<span class="cm"># Step 2: Transform X → X_poly (adds power columns)</span>
+<span class="var">X_poly</span> <span class="op">=</span> <span class="var">poly_reg</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>)
+
+<span class="cm"># Step 3: Fit a LinearRegression on the NEW transformed matrix</span>
+<span class="var">lin_reg_2</span> <span class="op">=</span> <span class="cls">LinearRegression</span>()
+<span class="var">lin_reg_2</span>.<span class="fn">fit</span>(<span class="var">X_poly</span>, <span class="var">y</span>)</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><strong>The Big Idea:</strong> Polynomial Regression is NOT a different algorithm — it's a <em>feature engineering trick</em> on top of regular Linear Regression.</p>
+          <p style="margin-top:8px"><code class="code-inline">PolynomialFeatures(degree=4)</code> takes your single column <em>x</em> and creates 5 columns: <strong>[1, x, x², x³, x⁴]</strong>. Then <code class="code-inline">LinearRegression</code> fits coefficients to those 5 columns. The result looks like a curve, but mathematically it's still a linear combination of features.</p>
+          <p style="margin-top:8px"><code class="code-inline">fit_transform(X)</code> = <code class="code-inline">fit(X)</code> + <code class="code-inline">transform(X)</code> in one step. It learns the power expansion from X, then applies it.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p><strong>الفكرة الأساسية:</strong> الـ Polynomial Regression مش خوارزمية جديدة — ده <em>تحويل للـ Features</em> قبل ما نديها للـ Linear Regression.</p>
+          <p style="margin-top:8px"><code class="code-inline">PolynomialFeatures(degree=4)</code> بياخد عمود <em>x</em> الواحد ويحوّله لـ 5 أعمدة: <strong>[1, x, x², x³, x⁴]</strong>. وبعدين الـ LinearRegression يحسب معامل (b) لكل عمود. النتيجة تبان زي منحنى، بس رياضياً لسه linear combination.</p>
+          <p style="margin-top:8px">تخيّل: عندنا Level = 6 → بعد التحويل بيبقى: [1, 6, 36, 216, 1296]. الموديل بيتعلم يضرب كل رقم في b وياخد مجموعهم.</p>
+        </div>
+      </div>
+
+      <div class="formula-box">PolynomialFeatures(degree=4):   x  →  [1,  x,  x²,  x³,  x⁴]</div>
+
+      <div class="info-box warn">
+        <div class="info-box-icon">⚠️</div>
+        <div class="info-box-content">
+          <div class="title">Critical: You NEED poly_reg later to predict!</div>
+          <p>Every prediction must pass through <code class="code-inline">poly_reg.fit_transform()</code> first. The model <code class="code-inline">lin_reg_2</code> was trained on 5 columns — if you feed it the raw <code class="code-inline">X</code> with 1 column, it crashes with a shape mismatch error.</p>
+          <div class="ara">مهم جداً: لو نسيت تعمل <code class="code-inline">poly_reg.fit_transform()</code> قبل الـ predict، هيطلع error لأن الموديل اتتدرب على 5 أعمدة مش 1. لازم دايمًا تعمل التحويل الأول.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 05 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">05</div>
+        <div>
+          <div class="section-title">Visualise Linear Regression Results</div>
+          <div class="section-subtitle">رسم نتيجة الخط المستقيم — بنثبت إنه فاشل</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 05 — PLOT 1</span>
+        </div>
+        <div class="code-body"><pre><span class="var">plt</span>.<span class="fn">scatter</span>(<span class="var">X</span>, <span class="var">y</span>, color <span class="op">=</span> <span class="str">'red'</span>)                      <span class="cm"># Real data points</span>
+<span class="var">plt</span>.<span class="fn">plot</span>(<span class="var">X</span>, <span class="var">lin_reg</span>.<span class="fn">predict</span>(<span class="var">X</span>), color <span class="op">=</span> <span class="str">'blue'</span>)       <span class="cm"># Straight line prediction</span>
+<span class="var">plt</span>.<span class="fn">title</span>(<span class="str">'Truth or Bluff (Linear Regression)'</span>)
+<span class="var">plt</span>.<span class="fn">xlabel</span>(<span class="str">'Position Level'</span>)
+<span class="var">plt</span>.<span class="fn">ylabel</span>(<span class="str">'Salary'</span>)
+<span class="var">plt</span>.<span class="fn">show</span>()</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><code class="code-inline">plt.scatter(X, y)</code> draws the <strong>real data</strong> as red dots. <code class="code-inline">plt.plot(X, lin_reg.predict(X))</code> draws the <strong>model's predictions</strong> as a blue line. The result: the straight line cuts through the middle of the salary curve but misses almost every point — especially the high-level executive salaries. This proves the "bluff" — linear regression is lying about the salary structure.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p>الـ scatter بيرسم النقاط الحقيقية (باللون الأحمر). الـ plot بيرسم تنبؤات الموديل (خط أزرق مستقيم). النتيجة: الخط بيمشي في النص بس بيغلط في معظم النقاط — خصوصاً رواتب المستويات العالية. ده بيثبت إن الـ Linear Regression "بيكدب" على الداتا دي.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 06 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">06</div>
+        <div>
+          <div class="section-title">Visualise Polynomial Regression Results</div>
+          <div class="section-subtitle">رسم نتيجة المنحنى — بنثبت إنه أفضل بكتير</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 06 — PLOT 2</span>
+        </div>
+        <div class="code-body"><pre><span class="var">plt</span>.<span class="fn">scatter</span>(<span class="var">X</span>, <span class="var">y</span>, color <span class="op">=</span> <span class="str">'red'</span>)
+<span class="var">plt</span>.<span class="fn">plot</span>(<span class="var">X</span>,
+         <span class="var">lin_reg_2</span>.<span class="fn">predict</span>(<span class="var">poly_reg</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>)),  <span class="cm"># transform first!</span>
+         color <span class="op">=</span> <span class="str">'blue'</span>)
+<span class="var">plt</span>.<span class="fn">title</span>(<span class="str">'Truth or Bluff (Polynomial Regression)'</span>)
+<span class="var">plt</span>.<span class="fn">xlabel</span>(<span class="str">'Position level'</span>)
+<span class="var">plt</span>.<span class="fn">ylabel</span>(<span class="str">'Salary'</span>)
+<span class="var">plt</span>.<span class="fn">show</span>()</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p>Notice the key difference from Phase 05: <code class="code-inline">lin_reg_2.predict(poly_reg.fit_transform(X))</code>. You can't just call <code class="code-inline">lin_reg_2.predict(X)</code> — the model expects 5 feature columns [1, x, x², x³, x⁴], so you must transform X first. The blue curve now passes through or very close to all 10 red dots. But this visualization is jagged (angular) because it only plots at the 10 original x-values — Phase 07 fixes this.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p>الفرق الأساسي: لازم تعمل <code class="code-inline">poly_reg.fit_transform(X)</code> قبل الـ predict — لأن <code class="code-inline">lin_reg_2</code> اتتدرب على 5 أعمدة. المنحنى دلوقتي بيمر بكل النقاط الحمراء تقريباً. بس هتلاقي الخط "مكسّر" (مش ناعم) — ده لأنه بيرسم على 10 نقاط بس. الفيز 07 بتحل الموضوع ده.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 07 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">07</div>
+        <div>
+          <div class="section-title">High-Resolution Smooth Curve <span class="new-flag">CLEVER TRICK</span></div>
+          <div class="section-subtitle">رسم المنحنى بدقة عالية — حيلة الـ X_grid الذكية</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 07 — SMOOTH VISUALIZATION</span>
+        </div>
+        <div class="code-body"><pre><span class="cm"># Create a dense grid of x-values (step 0.1 between min and max)</span>
+<span class="var">X_grid</span> <span class="op">=</span> np.<span class="fn">arange</span>(<span class="fn">min</span>(<span class="var">X</span>), <span class="fn">max</span>(<span class="var">X</span>), <span class="num">0.1</span>)
+<span class="cm"># Reshape from 1D array to 2D matrix (required by sklearn)</span>
+<span class="var">X_grid</span> <span class="op">=</span> <span class="var">X_grid</span>.<span class="fn">reshape</span>((<span class="fn">len</span>(<span class="var">X_grid</span>), <span class="num">1</span>))
+
+<span class="var">plt</span>.<span class="fn">scatter</span>(<span class="var">X</span>, <span class="var">y</span>, color <span class="op">=</span> <span class="str">'red'</span>)
+<span class="var">plt</span>.<span class="fn">plot</span>(<span class="var">X_grid</span>,
+         <span class="var">lin_reg_2</span>.<span class="fn">predict</span>(<span class="var">poly_reg</span>.<span class="fn">fit_transform</span>(<span class="var">X_grid</span>)),  <span class="cm"># transform X_grid!</span>
+         color <span class="op">=</span> <span class="str">'blue'</span>)
+<span class="var">plt</span>.<span class="fn">title</span>(<span class="str">'Truth or Bluff (Polynomial Regression)'</span>)
+<span class="var">plt</span>.<span class="fn">xlabel</span>(<span class="str">'Position level'</span>)
+<span class="var">plt</span>.<span class="fn">ylabel</span>(<span class="str">'Salary'</span>)
+<span class="var">plt</span>.<span class="fn">show</span>()</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p><strong>The X_grid trick:</strong> <code class="code-inline">np.arange(min, max, 0.1)</code> creates a list of x-values: [1.0, 1.1, 1.2, 1.3, … 9.9, 10.0] — 90 points instead of 10. By feeding all 90 points through the model, the <code class="code-inline">plt.plot</code> connects them into a visually smooth curve. The smaller the step (0.1 → 0.01), the smoother the curve.</p>
+          <p style="margin-top:8px"><strong>Why reshape?</strong> <code class="code-inline">np.arange</code> returns a 1D array <code class="code-inline">(90,)</code>. sklearn expects 2D inputs <code class="code-inline">(90, 1)</code>. The <code class="code-inline">.reshape((len, 1))</code> adds the column dimension.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p><strong>حيلة الـ X_grid:</strong> بدل 10 نقاط بنعمل 90 نقطة (من 1 لـ 10 بخطوة 0.1). لما الـ matplotlib يوصّل 90 نقطة ببعض، المنحنى بيبان ناعم ومش مكسّر. كل ما قلّلنا الـ step size (0.1 → 0.01)، كل ما المنحنى بقى أنعم.</p>
+          <p style="margin-top:8px"><strong>ليه الـ reshape؟</strong> الـ numpy.arange بترجع 1D array — شكلها (90,). الـ sklearn عايز 2D — شكله (90, 1). الـ reshape بتضيف الـ column dimension. فكر فيها: من صف واحد طويل → لـ عمود واحد طويل.</p>
+        </div>
+      </div>
+
+      <table>
+        <thead><tr><th>X input</th><th>Shape</th><th>sklearn accepts?</th></tr></thead>
+        <tbody>
+          <tr><td class="gold">np.arange(1,10,0.1)</td><td class="mono">(90,)</td><td class="red">❌ 1D — crashes</td></tr>
+          <tr><td class="gold">X_grid.reshape(len,1)</td><td class="mono">(90, 1)</td><td class="green">✅ 2D — works</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PHASE 08 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">08</div>
+        <div>
+          <div class="section-title">Predict with Linear Regression</div>
+          <div class="section-subtitle">التنبؤ بالراتب — الخط المستقيم بيكدب</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 08 — PREDICTION (LR)</span>
+        </div>
+        <div class="code-body"><pre><span class="cm"># Predict salary for someone at position level 6.5</span>
+<span class="var">lin_reg</span>.<span class="fn">predict</span>([[<span class="num">6.5</span>]])</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p>We ask: what salary would a level-6.5 employee earn? <code class="code-inline">[[6.5]]</code> uses double brackets — outer <code class="code-inline">[]</code> is the 2D wrapper (1 sample), inner <code class="code-inline">[6.5]</code> is the feature value. The linear model gives approximately <strong>$330,378</strong> — but looking at the plot, level 6.5 is between the Regional Manager (~$150K) and Partner (~$200K) brackets. The linear model wildly overestimates. That's the bluff.</p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p>السيناريو: موظف بمستوى خبرة 6.5 — المرتب المناسب له إيه؟ <code class="code-inline">[[6.5]]</code>: الـ brackets الجوانية هي الـ feature، الـ brackets البرانية هي الـ sample (لازم 2D). الـ Linear Regression بيقول ~330,000 دولار — بس لو بصيت على الرسم، المستوى 6.5 المفروض يكون قريب من 150-200 ألف. الـ Linear بيكدب!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 09 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">09</div>
+        <div>
+          <div class="section-title">Predict with Polynomial Regression <span class="new-flag">ALWAYS TRANSFORM</span></div>
+          <div class="section-subtitle">التنبؤ بالـ Polynomial — لازم تحوّل الـ X الأول</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="filename">polynomial_regression.py</span>
+          <span class="phase-badge">PHASE 09 — PREDICTION (PLR)</span>
+        </div>
+        <div class="code-body"><pre><span class="cm"># MUST transform the input through poly_reg first!</span>
+<span class="var">lin_reg_2</span>.<span class="fn">predict</span>(<span class="var">poly_reg</span>.<span class="fn">fit_transform</span>([[<span class="num">6.5</span>]]))</pre></div>
+      </div>
+
+      <div class="annotation">
+        <div class="ann-block eng">
+          <div class="lang-tag">🇬🇧 English</div>
+          <p>The polynomial model predicts approximately <strong>$158,862</strong> — which is between the $150K (Regional Manager, level 6) and $200K (Partner, level 7) salaries in the dataset. This is the realistic answer. The pattern: <code class="code-inline">poly_reg.fit_transform([[6.5]])</code> first turns <code class="code-inline">[[6.5]]</code> into <code class="code-inline">[[1, 6.5, 42.25, 274.6, 1785]]</code>, then <code class="code-inline">lin_reg_2</code> predicts from those 5 columns.</p>
+          <p style="margin-top:8px">Golden rule: <strong>the transform step that was used in training must be applied to every prediction.</strong></p>
+        </div>
+        <div class="ann-block ara">
+          <div class="lang-tag">🇪🇬 بالعربي</div>
+          <p>الـ Polynomial بيقول ~158,862 دولار — ده منطقي جداً لأنه بين الـ $150K (Level 6) والـ $200K (Level 7). الخطوة المهمة: <code class="code-inline">poly_reg.fit_transform([[6.5]])</code> بتحوّل الـ 6.5 لـ 5 أعمدة [1, 6.5, 42.25, 274.6, 1785]، وبعدين الموديل يتنبأ من الـ 5 أعمدة دول.</p>
+          <p style="margin-top:8px">القاعدة الذهبية: <strong>أي تحويل اتعمل في التدريب، لازم يتعمل برضو في التنبؤ.</strong></p>
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-card mlr">
+          <h4>📉 Linear Regression Prediction</h4>
+          <ul>
+            <li>Input: [[6.5]] (1 feature column)</li>
+            <li>No transformation needed</li>
+            <li>Result: ~$330,378 ❌ (unrealistic)</li>
+            <li>Model simply extends the straight line</li>
+          </ul>
+        </div>
+        <div class="compare-card plr">
+          <h4>📈 Polynomial Regression Prediction</h4>
+          <ul>
+            <li>Input: poly_reg.fit_transform([[6.5]])</li>
+            <li>→ Creates 5 columns: [1, 6.5, 42.25, 274.6, 1785]</li>
+            <li>Result: ~$158,862 ✅ (realistic)</li>
+            <li>Model follows the salary curve shape</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end page-code -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: 6 BIG QUESTIONS                                   -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-concepts" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">Q&A</div>
+        <div>
+          <div class="section-title">The 6 Big Questions</div>
+          <div class="section-subtitle">الأسئلة الستة الكبيرة — اللي لازم تعرف إجاباتها عن الـ PLR</div>
+        </div>
+      </div>
+
+      <div class="qa-grid">
+
+        <!-- Q1 -->
+        <div class="qa-card full">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon gold">1</div>
+            <div class="qa-q-text">
+              The "5-Year-Old" Question — What IS Polynomial Regression?
+              <span class="q-sub">سؤال الطفل: إيه الفرق بين الخط والمنحنى؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer open">
+            <p><strong>The Core Idea:</strong> When your data bends, curves, or wiggles — a straight line will always fail. Polynomial Regression fits a <em>curved line</em> through the data instead.</p>
+            <p><strong>The Visual:</strong> In Linear Regression you drew a flat ruler through the data. In Polynomial Regression you bend that ruler into a curve — like a rollercoaster track that rises steeply at the executive salary levels.</p>
+            <div class="formula-box">ŷ = b₀ + b₁x + b₂x² + b₃x³ + b₄x⁴</div>
+            <p><strong>The Secret:</strong> Despite fitting a curve, it's still called "Linear" Regression internally because the model is still linear in its <em>coefficients</em> (b₀, b₁, b₂…). The non-linearity comes from the feature columns (x², x³) — not from the algorithm itself.</p>
+            <div class="qa-answer ara-ans">
+              الـ Polynomial Regression ببساطة: لما الداتا بتاخد شكل منحنى مش خط مستقيم — نبدل ما نرسم خط، نرسم منحنى يناسب شكلها. الحيلة بتاعته إنه مش خوارزمية جديدة خالص — هو بس بياخد العمود x ويضيف أعمدة جديدة (x², x³, x⁴) ويدّيهم للـ LinearRegression العادي. النتيجة: موديل بيتنبأ بمنحنيات.
+            </div>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon teal">2</div>
+            <div class="qa-q-text">
+              The "Data Diet" Question — Do I Need Feature Scaling?
+              <span class="q-sub">محتاج StandardScaler في الـ PLR؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Answer: IT DEPENDS on the degree.</strong> This is the opposite of MLR!</p>
+            <p><strong>For low degrees (2–3):</strong> Often fine without scaling. The values x² and x³ are manageable.</p>
+            <p><strong>For high degrees (4+):</strong> <span style="color:var(--red)">YES, scaling is strongly recommended.</span> If x = 1000, then x⁴ = 1,000,000,000,000. These astronomically large numbers cause numerical instability (gradient explosion) and extremely slow fitting. <code class="code-inline">StandardScaler</code> before <code class="code-inline">PolynomialFeatures</code> keeps the numbers manageable.</p>
+            <p><strong>This notebook works fine without scaling</strong> because x ranges only from 1–10 (small numbers). x⁴ = 10,000 max — still reasonable.</p>
+            <div class="qa-answer ara-ans">
+              الجواب: يعتمد على الـ degree. في الـ MLR قلنا "مش محتاج Scaling أبداً". هنا الموضوع مختلف: لو x = 1000 وعمل x⁴ = تريليون — ده بيخلق مشكلة رياضية. في الداتا بتاعتنا x من 1 لـ 10 — مفيش مشكلة. بس في داتا حقيقية بأرقام كبيرة، StandardScaler قبل PolynomialFeatures أهم جداً.
+            </div>
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon red">3</div>
+            <div class="qa-q-text">
+              The "Identity Crisis" — Why Is It Called LINEAR if It Fits Curves?
+              <span class="q-sub">ليه اسمه "Linear" وهو بيرسم منحنى؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Answer:</strong> The word "Linear" refers to the <em>coefficients</em>, NOT the shape of the curve.</p>
+            <p>The formula <strong>ŷ = b₀ + b₁x + b₂x²</strong> is <em>linear in b₀, b₁, b₂</em>. If you double all b's, the output doubles. That's the mathematical definition of linearity.</p>
+            <p>The <em>feature matrix</em> (x, x², x³) is non-linear — but that's just preprocessing. Once x² is treated as a separate column, the LinearRegression algorithm sees it as just another plain column and fits it the same way.</p>
+            <div class="qa-answer ara-ans">
+              كلمة "Linear" بتشير للـ coefficients (b₀, b₁, b₂...) مش لشكل المنحنى. المعادلة ŷ = b₀ + b₁x + b₂x² هي "linear في الـ b's" — لو ضاعفت كل b، الـ output بيتضاعف. ده هو تعريف الـ linearity رياضياً. الشكل المنحني جاي من أعمدة الـ features (x²) مش من الخوارزمية نفسها.
+            </div>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="qa-card full">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon blue">4</div>
+            <div class="qa-q-text">
+              The "Degree Dial" Question — How Do I Choose the Right Degree?
+              <span class="q-sub">ازاي أختار الـ Degree المناسب؟ وما الفرق بين 2 و4 و10؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>The Degree Ladder:</strong> Degree controls how many bends the curve can make.</p>
+            <div class="degree-ladder">
+              <div class="degree-row">
+                <div class="degree-num" style="color:var(--blue)">1</div>
+                <div class="degree-curve">Straight Line</div>
+                <div class="degree-formula">ŷ = b₀ + b₁x</div>
+                <div class="degree-risk" style="background:rgba(74,222,128,0.1);color:var(--green);border:1px solid var(--green-dim)">Underfit</div>
+              </div>
+              <div class="degree-row">
+                <div class="degree-num" style="color:var(--teal)">2</div>
+                <div class="degree-curve">Parabola (U-shape)</div>
+                <div class="degree-formula">ŷ = b₀ + b₁x + b₂x²</div>
+                <div class="degree-risk" style="background:rgba(74,222,128,0.1);color:var(--green);border:1px solid var(--green-dim)">Good start</div>
+              </div>
+              <div class="degree-row">
+                <div class="degree-num" style="color:var(--gold)">3</div>
+                <div class="degree-curve">Cubic (S-curve)</div>
+                <div class="degree-formula">ŷ = b₀ + b₁x + b₂x² + b₃x³</div>
+                <div class="degree-risk" style="background:rgba(212,168,67,0.1);color:var(--gold);border:1px solid var(--gold-dim)">Often ideal</div>
+              </div>
+              <div class="degree-row">
+                <div class="degree-num" style="color:var(--orange)">4</div>
+                <div class="degree-curve">Quartic (used here)</div>
+                <div class="degree-formula">ŷ = b₀ + … + b₄x⁴</div>
+                <div class="degree-risk" style="background:rgba(251,146,60,0.1);color:var(--orange);border:1px solid #92400e">Fits well here</div>
+              </div>
+              <div class="degree-row">
+                <div class="degree-num" style="color:var(--red)">10+</div>
+                <div class="degree-curve">Wiggly mess</div>
+                <div class="degree-formula">ŷ = b₀ + … + b₁₀x¹⁰</div>
+                <div class="degree-risk" style="background:rgba(248,113,113,0.1);color:var(--red);border:1px solid var(--red-dim)">Overfit ⚠️</div>
+              </div>
+            </div>
+            <p><strong>How to choose:</strong> Start at degree=2. Go up one at a time. Track R² on training data AND test data. When test R² stops improving (or gets worse), stop — you've hit overfitting.</p>
+            <div class="qa-answer ara-ans">
+              الـ Degree بيتحكم في عدد الـ "طيّات" في المنحنى. Degree 1 = خط مستقيم. Degree 2 = U-shape. Degree 3 = S-shape. Degree 4 = المستخدم هنا — بيناسب بيانات الرواتب. فوق 7–8 = بتاكل الـ noise وبيفضل Overfit. الإستراتيجية: ابدأ من 2، ارفع تدريجياً، راقب الـ R² على الـ test data.
+            </div>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon purple">5</div>
+            <div class="qa-q-text">
+              The "Kryptonite" Question — What is Overfitting?
+              <span class="q-sub">الـ Overfitting — الخطر الأكبر في الـ PLR</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <p><strong>Overfitting:</strong> When the model memorizes the training data perfectly but fails on new data.</p>
+            <p>With high-degree polynomial (e.g., degree=10 on 10 data points), the model can snake through every single training point exactly (R²=1.0 on training). But give it a new point and it predicts wildly wrong values.</p>
+            <p><strong>Signs of overfitting:</strong> High R² on training + low R² on test. The curve looks like a rollercoaster with extreme spikes between data points.</p>
+            <p><strong>Fixes:</strong> Reduce degree | Add more training data | Use Ridge/Lasso regularization | Cross-validation.</p>
+            <div class="qa-answer ara-ans">
+              الـ Overfitting: الموديل بيحفظ الداتا بتاعة التدريب زي ما هي بدل ما يتعلم النمط العام. مثلاً degree=10 على 10 نقاط — هيعمل R²=1.0 على التدريب بس لما تديه نقطة جديدة بيغلط بشكل مبالغ. الحل: قلّل الـ degree، استخدم أكتر داتا، أو جرّب الـ Ridge polynomial.
+            </div>
+          </div>
+        </div>
+
+        <!-- Q6 -->
+        <div class="qa-card">
+          <div class="qa-question" onclick="toggleQA(this)">
+            <div class="qa-q-icon orange">6</div>
+            <div class="qa-q-text">
+              The "VS" Question — PLR vs MLR: When to Use Which?
+              <span class="q-sub">امتى نستخدم PLR بدل MLR؟ وإيه الفرق الجوهري؟</span>
+            </div>
+            <div class="qa-toggle">▼</div>
+          </div>
+          <div class="qa-answer">
+            <table>
+              <thead><tr><th>Aspect</th><th>Multiple Linear Regression</th><th>Polynomial Regression</th></tr></thead>
+              <tbody>
+                <tr><td class="gold">Relationship</td><td>Linear (straight hyperplane)</td><td>Non-linear (curved)</td></tr>
+                <tr><td class="gold">Data shape</td><td>Scatter looks linear</td><td>Scatter shows a curve or bend</td></tr>
+                <tr><td class="gold">Features used</td><td>Multiple different columns</td><td>Power versions of 1 column</td></tr>
+                <tr><td class="gold">Feature Scaling</td><td class="green">Not needed</td><td class="red">Needed for high degree</td></tr>
+                <tr><td class="gold">Overfitting risk</td><td class="green">Low (simple model)</td><td class="red">High (degree↑ = risk↑)</td></tr>
+                <tr><td class="gold">Interpretability</td><td class="green">High (each b = 1 feature)</td><td class="red">Low (b's interact across powers)</td></tr>
+              </tbody>
+            </table>
+            <p><strong>Simple rule:</strong> Plot your data first. If it looks like a bent curve → try PLR. If it looks roughly linear with multiple predictors → MLR.</p>
+            <div class="qa-answer ara-ans">
+              MLR = لما عندك أعمدة كتير وكل واحد بيأثر بشكل مستقل على y. PLR = لما عندك feature واحد وعلاقته بـ y منحنية مش مستقيمة. الخطورة الأكبر في PLR هي الـ Overfitting — لما ترفع الـ degree كتير الموديل بيحفظ مش بيتعلم.
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end qa-grid -->
+    </div>
+  </div><!-- end page-concepts -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: MEMORY TIPS                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-memory" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">MEM</div>
+        <div>
+          <div class="section-title">Memory Tips &amp; Mnemonics</div>
+          <div class="section-subtitle">حيل للحفظ — اختصارات وتشبيهات تساعدك تفتكر</div>
+        </div>
+      </div>
+
+      <div class="memory-grid">
+        <div class="memory-card gold-card">
+          <div class="memory-emoji">🪄</div>
+          <h4>The "Magic Columns" Trick</h4>
+          <p>PolynomialFeatures does ONE thing: takes 1 column (x) and creates [1, x, x², x³, x⁴]. After that, regular LinearRegression takes over.</p>
+          <span class="mono">x = 3 → [1, 3, 9, 27, 81]</span>
+          <p style="margin-top:8px;font-size:13px;color:var(--text-dim)">فكر في PolynomialFeatures كـ "مصنع أعمدة" — بياخد عمود واحد ويطلّع منه 5 أعمدة. بعدها LinearRegression عادي جداً.</p>
+        </div>
+
+        <div class="memory-card teal-card">
+          <div class="memory-emoji">🔑</div>
+          <h4>The "Always Transform" Rule</h4>
+          <p>Never predict without transforming. <strong>Every single predict call</strong> needs poly_reg.fit_transform() first — no exceptions.</p>
+          <span class="mono">lin_reg_2.predict( poly_reg.fit_transform([[x]]) )</span>
+          <p style="margin-top:8px;font-size:13px;color:var(--text-dim)">نقطة ضعف كل طالب في الأول: ينسى يحوّل الـ input. اكتب دايمًا الـ predict بيه جوه.</p>
+        </div>
+
+        <div class="memory-card blue-card">
+          <div class="memory-emoji">📐</div>
+          <h4>The reshape Rule</h4>
+          <p>numpy.arange returns 1D. sklearn wants 2D. Always reshape before feeding to a model.</p>
+          <span class="mono">.reshape((len(X_grid), 1))</span>
+          <p style="margin-top:8px;font-size:13px;color:var(--text-dim)">تخيل الـ reshape كـ "تحويل صف أفقي لعمود رأسي" — من shape (90,) لـ (90,1).</p>
+        </div>
+
+        <div class="memory-card red-card">
+          <div class="memory-emoji">🎚️</div>
+          <h4>Degree = "Curve Flexibility"</h4>
+          <p>Degree controls how bendy your curve is. Higher = more flexible = higher overfit risk.</p>
+          <span class="mono">2→U,  3→S,  4→used here,  10→🤪</span>
+          <p style="margin-top:8px;font-size:13px;color:var(--text-dim)">ابدأ من 2، ارفع بالتدريج، راقب الـ test R². لما بيوقف يتحسن — وقف.</p>
+        </div>
+
+        <div class="memory-card purple-card">
+          <div class="memory-emoji">👥</div>
+          <h4>The Double-Model Pattern</h4>
+          <p>This notebook ALWAYS trains two models: lin_reg (baseline) + lin_reg_2 (poly). The comparison plot tells the whole story.</p>
+          <span class="mono">lin_reg ← baseline · lin_reg_2 ← poly</span>
+          <p style="margin-top:8px;font-size:13px;color:var(--text-dim)">احفظ الاتنين دايمًا: lin_reg بيكدب، lin_reg_2 بيصدق. الرسم بيوضح الفرق.</p>
+        </div>
+
+        <div class="memory-card orange-card">
+          <div class="memory-emoji">⚡</div>
+          <h4>PLR vs MLR Scaling Rule</h4>
+          <p>MLR → Never needs StandardScaler. PLR → Needs scaling when x-values are large (to prevent x⁴ from exploding).</p>
+          <span class="mono">MLR: no scale · PLR high-degree: scale!</span>
+          <p style="margin-top:8px;font-size:13px;color:var(--text-dim)">الفرق الجوهري: MLR coefficients بيتكيفوا. PLR بأعداد كبيرة وـ degree عالي → أرقام تريليون → مشكلة عددية.</p>
+        </div>
+      </div>
+
+      <!-- Code skeleton -->
+      <div style="margin-top: 40px;">
+        <div class="section-title" style="font-size:18px; margin-bottom:20px;">Code Skeleton — The Pattern to Memorize</div>
+        <div class="code-wrap">
+          <div class="code-header">
+            <span class="filename">plr_skeleton.py — commit this to memory</span>
+            <span class="phase-badge">MEMORIZE THIS</span>
+          </div>
+          <div class="code-body"><pre><span class="cm"># ── 1. IMPORTS ────────────────────────────────────────────</span>
+<span class="kw">import</span> numpy <span class="kw">as</span> np, pandas <span class="kw">as</span> pd
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="cm"># ── 2. LOAD (skip text column → start from col 1) ─────────</span>
+<span class="var">ds</span> <span class="op">=</span> pd.<span class="fn">read_csv</span>(<span class="str">'Position_Salaries.csv'</span>)
+<span class="var">X</span> <span class="op">=</span> <span class="var">ds</span>.iloc[:, <span class="num">1</span>:-<span class="num">1</span>].values   <span class="cm"># Level column only</span>
+<span class="var">y</span> <span class="op">=</span> <span class="var">ds</span>.iloc[:, -<span class="num">1</span>].values
+
+<span class="cm"># ── 3. BASELINE (linear) ──────────────────────────────────</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+<span class="var">lin_reg</span> <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(<span class="var">X</span>, <span class="var">y</span>)
+
+<span class="cm"># ── 4. POLYNOMIAL (the new stuff) ─────────────────────────</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">PolynomialFeatures</span>
+<span class="var">poly_reg</span>  <span class="op">=</span> <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="num">4</span>)
+<span class="var">X_poly</span>    <span class="op">=</span> <span class="var">poly_reg</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>)
+<span class="var">lin_reg_2</span> <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(<span class="var">X_poly</span>, <span class="var">y</span>)
+
+<span class="cm"># ── 5. SMOOTH VISUALIZATION ───────────────────────────────</span>
+<span class="var">X_grid</span> <span class="op">=</span> np.<span class="fn">arange</span>(<span class="fn">min</span>(<span class="var">X</span>), <span class="fn">max</span>(<span class="var">X</span>), <span class="num">0.1</span>).<span class="fn">reshape</span>((-<span class="num">1</span>, <span class="num">1</span>))
+
+<span class="cm"># ── 6. PREDICT (always transform first!) ──────────────────</span>
+<span class="var">pred</span> <span class="op">=</span> <span class="var">lin_reg_2</span>.<span class="fn">predict</span>(<span class="var">poly_reg</span>.<span class="fn">fit_transform</span>([[<span class="num">6.5</span>]]))</pre></div>
+        </div>
+      </div>
+
+      <!-- Analogy table -->
+      <div style="margin-top:40px;">
+        <div class="section-title" style="font-size:18px; margin-bottom:16px;">PLR vs MLR — Side by Side</div>
+        <table>
+          <thead><tr><th>Step</th><th>MLR Code</th><th>PLR Code</th><th>Difference?</th></tr></thead>
+          <tbody>
+            <tr><td class="gold">Load X</td><td class="mono">iloc[:, :-1]</td><td class="mono">iloc[:, 1:-1]</td><td>PLR skips text col 0</td></tr>
+            <tr><td class="gold">Transform</td><td class="mono">OneHotEncoder</td><td class="mono">PolynomialFeatures</td><td>Different transformer</td></tr>
+            <tr><td class="gold">Train</td><td class="mono">LinearRegression()</td><td class="mono">LinearRegression()</td><td class="green">Identical!</td></tr>
+            <tr><td class="gold">Predict</td><td class="mono">reg.predict(X)</td><td class="mono">reg.predict(poly.transform(X))</td><td>PLR must transform</td></tr>
+            <tr><td class="gold">Visualize</td><td>Scatter + line</td><td>X_grid + smooth curve</td><td>PLR uses X_grid</td></tr>
+            <tr><td class="gold">Split</td><td class="green">80/20 split</td><td class="red">No split (tiny dataset)</td><td>Context-dependent</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div><!-- end page-memory -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: AI TIPS                                           -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-aitips" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">AI</div>
+        <div>
+          <div class="section-title">AI Tips — Next Steps to Try</div>
+          <div class="section-subtitle">خطوات إضافية تجربها فوق الـ Notebook بتاعك</div>
+        </div>
+      </div>
+
+      <div class="tips-hero">
+        <h2>🤖 Upgrade Your PLR Project</h2>
+        <p>Your notebook works — now make it professional. These 8 extensions each build a new mental model. Start with Tip 1 (metrics) and Tip 2 (degree comparison) — they're the most impactful and immediately runnable.</p>
+      </div>
+
+      <div class="tips-grid">
+
+        <!-- Tip 1 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(45,212,191,0.1)">📊</div>
+            <div>
+              <div class="tip-card-title">Tip 1: Add Evaluation Metrics (R² &amp; RMSE)</div>
+              <div class="tip-card-subtitle">أضف مقاييس الدقة — الموديل كويس قد إيه؟</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Your notebook has <strong>zero evaluation metrics</strong>. Adding R² tells you how much variance the model explains. RMSE tells you the average dollar error in salary prediction.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.metrics <span class="kw">import</span> r2_score, mean_squared_error
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="cm"># Predictions on training data (since no test split here)</span>
+<span class="var">y_pred_lin</span>  <span class="op">=</span> <span class="var">lin_reg</span>.<span class="fn">predict</span>(<span class="var">X</span>)
+<span class="var">y_pred_poly</span> <span class="op">=</span> <span class="var">lin_reg_2</span>.<span class="fn">predict</span>(<span class="var">poly_reg</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>))
+
+<span class="var">r2_lin</span>  <span class="op">=</span> <span class="fn">r2_score</span>(<span class="var">y</span>, <span class="var">y_pred_lin</span>)
+<span class="var">r2_poly</span> <span class="op">=</span> <span class="fn">r2_score</span>(<span class="var">y</span>, <span class="var">y_pred_poly</span>)
+
+<span class="var">rmse_lin</span>  <span class="op">=</span> np.<span class="fn">sqrt</span>(<span class="fn">mean_squared_error</span>(<span class="var">y</span>, <span class="var">y_pred_lin</span>))
+<span class="var">rmse_poly</span> <span class="op">=</span> np.<span class="fn">sqrt</span>(<span class="fn">mean_squared_error</span>(<span class="var">y</span>, <span class="var">y_pred_poly</span>))
+
+<span class="kw">print</span>(<span class="str">f"Linear   → R²: {r2_lin:.4f} | RMSE: ${rmse_lin:,.0f}"</span>)
+<span class="kw">print</span>(<span class="str">f"Poly(4)  → R²: {r2_poly:.4f} | RMSE: ${rmse_poly:,.0f}"</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip 2 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(212,168,67,0.1)">🔢</div>
+            <div>
+              <div class="tip-card-title">Tip 2: Compare All Degrees in a Loop</div>
+              <div class="tip-card-subtitle">جرّب degrees 1-8 وشوف أيهم أفضل</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Instead of guessing degree=4, programmatically test all degrees from 1–8 and print their R² scores. You'll see clearly when overfitting kicks in.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">PolynomialFeatures</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> r2_score
+
+<span class="kw">print</span>(<span class="str">f"{'Degree':&lt;10} {'R² Score':&lt;12}"</span>)
+<span class="kw">print</span>(<span class="str">"-" * 24</span>)
+<span class="kw">for</span> deg <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">9</span>):
+    <span class="var">pf</span>   <span class="op">=</span> <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span>deg)
+    <span class="var">Xp</span>   <span class="op">=</span> <span class="var">pf</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>)
+    <span class="var">lr</span>   <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(<span class="var">Xp</span>, <span class="var">y</span>)
+    <span class="var">r2</span>   <span class="op">=</span> <span class="fn">r2_score</span>(<span class="var">y</span>, <span class="var">lr</span>.<span class="fn">predict</span>(<span class="var">Xp</span>))
+    <span class="kw">print</span>(<span class="str">f"  {deg:&lt;9} {r2:.6f}"</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip 3 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(96,165,250,0.1)">✂️</div>
+            <div>
+              <div class="tip-card-title">Tip 3: Add a Proper Train/Test Split</div>
+              <div class="tip-card-subtitle">أضف تقسيم train/test عشان تعرف هل الموديل بيعمّم</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>The notebook uses the full 10-row dataset for training (no test data). This hides overfitting. Here's how to properly evaluate on held-out data — even on a small dataset:</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split
+
+<span class="cm"># Split: 8 train / 2 test (80/20 on 10 rows)</span>
+<span class="var">X_train</span>, <span class="var">X_test</span>, <span class="var">y_train</span>, <span class="var">y_test</span> <span class="op">=</span> <span class="fn">train_test_split</span>(
+    <span class="var">X</span>, <span class="var">y</span>, test_size<span class="op">=</span><span class="num">0.2</span>, random_state<span class="op">=</span><span class="num">42</span>)
+
+<span class="var">poly</span>  <span class="op">=</span> <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="num">4</span>)
+<span class="var">X_tr</span>  <span class="op">=</span> <span class="var">poly</span>.<span class="fn">fit_transform</span>(<span class="var">X_train</span>)   <span class="cm"># fit on train only</span>
+<span class="var">X_te</span>  <span class="op">=</span> <span class="var">poly</span>.<span class="fn">transform</span>(<span class="var">X_test</span>)       <span class="cm"># transform test (no fit!)</span>
+
+<span class="var">model</span> <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(<span class="var">X_tr</span>, <span class="var">y_train</span>)
+<span class="kw">print</span>(<span class="str">"Train R²:"</span>, <span class="fn">r2_score</span>(<span class="var">y_train</span>, <span class="var">model</span>.<span class="fn">predict</span>(<span class="var">X_tr</span>)))
+<span class="kw">print</span>(<span class="str">"Test  R²:"</span>, <span class="fn">r2_score</span>(<span class="var">y_test</span>,  <span class="var">model</span>.<span class="fn">predict</span>(<span class="var">X_te</span>)))</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip 4 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(192,132,252,0.1)">🏗️</div>
+            <div>
+              <div class="tip-card-title">Tip 4: Use sklearn Pipeline (Pro Way)</div>
+              <div class="tip-card-subtitle">استخدم Pipeline — الطريقة الاحترافية</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>Instead of manually calling <code class="code-inline">poly_reg.fit_transform()</code> everywhere, chain PolynomialFeatures + LinearRegression in a single <code class="code-inline">Pipeline</code>. No more forgetting the transform step.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="cls">Pipeline</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">PolynomialFeatures</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+
+<span class="var">plr_pipe</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'poly'</span>,  <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="num">4</span>)),
+    (<span class="str">'model'</span>, <span class="cls">LinearRegression</span>())
+])
+
+<span class="var">plr_pipe</span>.<span class="fn">fit</span>(<span class="var">X</span>, <span class="var">y</span>)
+
+<span class="cm"># Now predict directly — transform is handled internally!</span>
+<span class="var">plr_pipe</span>.<span class="fn">predict</span>([[<span class="num">6.5</span>]])  <span class="cm"># No poly_reg.fit_transform needed!</span></pre></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip 5 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(74,222,128,0.1)">🌡️</div>
+            <div>
+              <div class="tip-card-title">Tip 5: Add Feature Scaling (Real-World Data)</div>
+              <div class="tip-card-subtitle">أضف StandardScaler للداتا الحقيقية بأرقام كبيرة</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>This notebook's x (1–10) doesn't need scaling. But when your dataset has large values (e.g., age=35, income=80000), scale BEFORE polynomial expansion to prevent numerical explosion.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">StandardScaler</span>, <span class="cls">PolynomialFeatures</span>
+<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="cls">Pipeline</span>
+
+<span class="cm"># Scale FIRST, then polynomial expand</span>
+<span class="var">pipe_scaled</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'scale'</span>, <span class="cls">StandardScaler</span>()),             <span class="cm"># 1. scale x to mean=0, std=1</span>
+    (<span class="str">'poly'</span>,  <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="num">4</span>)), <span class="cm"># 2. add x², x³, x⁴</span>
+    (<span class="str">'reg'</span>,   <span class="cls">LinearRegression</span>())             <span class="cm"># 3. fit</span>
+])
+<span class="var">pipe_scaled</span>.<span class="fn">fit</span>(<span class="var">X</span>, <span class="var">y</span>)
+<span class="var">pipe_scaled</span>.<span class="fn">predict</span>([[<span class="num">6.5</span>]])</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip 6 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(251,146,60,0.1)">🔄</div>
+            <div>
+              <div class="tip-card-title">Tip 6: Cross-Validation for Robust Evaluation</div>
+              <div class="tip-card-subtitle">استخدم Cross-Validation عشان تتأكد من الموديل</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>With only 10 rows, a single train/test split is unreliable (you might get lucky or unlucky). K-Fold CV averages across multiple splits for a more trustworthy score.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> cross_val_score
+<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="cls">Pipeline</span>
+
+<span class="var">plr_pipe</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'poly'</span>,  <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="num">4</span>)),
+    (<span class="str">'model'</span>, <span class="cls">LinearRegression</span>())
+])
+
+<span class="cm"># 5-fold CV (5 folds on 10 rows = 2 test rows each fold)</span>
+<span class="var">scores</span> <span class="op">=</span> <span class="fn">cross_val_score</span>(<span class="var">plr_pipe</span>, <span class="var">X</span>, <span class="var">y</span>,
+                         cv<span class="op">=</span><span class="num">5</span>, scoring<span class="op">=</span><span class="str">'r2'</span>)
+<span class="kw">print</span>(<span class="str">"CV R² scores:"</span>, <span class="var">scores</span>)
+<span class="kw">print</span>(<span class="str">f"Mean R²: {scores.mean():.4f} ± {scores.std():.4f}"</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip 7 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(248,113,113,0.1)">📉</div>
+            <div>
+              <div class="tip-card-title">Tip 7: Detect Overfitting — Learning Curve</div>
+              <div class="tip-card-subtitle">اكشف الـ Overfitting — ارسم Learning Curve</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>A learning curve shows training R² vs validation R² as you increase the amount of training data. If train score is much higher than val score — you're overfitting.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> learning_curve
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="var">train_sz</span>, <span class="var">tr_sc</span>, <span class="var">val_sc</span> <span class="op">=</span> <span class="fn">learning_curve</span>(
+    <span class="var">plr_pipe</span>, <span class="var">X</span>, <span class="var">y</span>, cv<span class="op">=</span><span class="num">5</span>, scoring<span class="op">=</span><span class="str">'r2'</span>,
+    train_sizes<span class="op">=</span>np.<span class="fn">linspace</span>(<span class="num">0.3</span>, <span class="num">1.0</span>, <span class="num">5</span>))
+
+plt.<span class="fn">plot</span>(<span class="var">train_sz</span>, <span class="var">tr_sc</span>.<span class="fn">mean</span>(axis<span class="op">=</span><span class="num">1</span>), label<span class="op">=</span><span class="str">'Training'</span>, color<span class="op">=</span><span class="str">'#d4a843'</span>)
+plt.<span class="fn">plot</span>(<span class="var">train_sz</span>, <span class="var">val_sc</span>.<span class="fn">mean</span>(axis<span class="op">=</span><span class="num">1</span>), label<span class="op">=</span><span class="str">'Validation'</span>, color<span class="op">=</span><span class="str">'#2dd4bf'</span>)
+plt.<span class="fn">legend</span>(); plt.<span class="fn">xlabel</span>(<span class="str">'Training size'</span>)
+plt.<span class="fn">ylabel</span>(<span class="str">'R²'</span>); plt.<span class="fn">title</span>(<span class="str">'Learning Curve'</span>)
+plt.<span class="fn">show</span>()</pre></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip 8 -->
+        <div class="tip-card">
+          <div class="tip-card-header">
+            <div class="tip-card-icon" style="background:rgba(192,132,252,0.1)">🛡️</div>
+            <div>
+              <div class="tip-card-title">Tip 8: Ridge Polynomial (Anti-Overfit)</div>
+              <div class="tip-card-subtitle">استخدم Ridge Polynomial ضد الـ Overfitting</div>
+            </div>
+          </div>
+          <div class="tip-card-body">
+            <p>When you go high-degree, Ridge (L2 penalty) shrinks extreme coefficients and reduces overfitting without needing to reduce the degree. The alpha parameter controls how much to shrink.</p>
+            <div class="code-wrap" style="margin-top:0">
+              <div class="code-body"><pre style="font-size:12px"><span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">Ridge</span>
+<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="cls">Pipeline</span>
+
+<span class="var">ridge_pipe</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'poly'</span>,  <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="num">6</span>)),  <span class="cm"># higher degree</span>
+    (<span class="str">'ridge'</span>, <span class="cls">Ridge</span>(alpha<span class="op">=</span><span class="num">10.0</span>))              <span class="cm"># but regularized</span>
+])
+<span class="var">ridge_pipe</span>.<span class="fn">fit</span>(<span class="var">X</span>, <span class="var">y</span>)
+<span class="kw">print</span>(<span class="str">f"Ridge Poly R²: {r2_score(y, ridge_pipe.predict(X)):.4f}"</span>)
+
+<span class="cm"># Compare: plain degree-6 will likely overfit more</span>
+<span class="var">plain_pipe</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'poly'</span>,  <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="num">6</span>)),
+    (<span class="str">'reg'</span>,   <span class="cls">LinearRegression</span>())
+])
+<span class="var">plain_pipe</span>.<span class="fn">fit</span>(<span class="var">X</span>, <span class="var">y</span>)
+<span class="kw">print</span>(<span class="str">f"Plain Poly R²: {r2_score(y, plain_pipe.predict(X)):.4f}"</span>)</pre></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end tips-grid -->
+
+      <!-- Tech Questions panel -->
+      <div style="margin-top:48px">
+        <div class="section-title" style="font-size:20px; margin-bottom:24px;">🤔 Tech Questions You Should Ask Yourself</div>
+
+        <div class="qa-grid">
+
+          <div class="qa-card full">
+            <div class="qa-question" onclick="toggleQA(this)">
+              <div class="qa-q-icon teal">Q</div>
+              <div class="qa-q-text">
+                The notebook has NO R² score, NO test set — is that acceptable? When and why?
+                <span class="q-sub">الـ Notebook مفيهوش evaluation خالص — ده صح؟</span>
+              </div>
+              <div class="qa-toggle">▼</div>
+            </div>
+            <div class="qa-answer open">
+              <p><strong>In this specific context: Yes, intentionally acceptable.</strong> The purpose of this dataset is not generalization — it's <em>curve fitting</em> on a known salary structure. The 10 data points are the entire population (all 10 company positions), not a sample. The question is "given level 6.5, what would this company pay?" — there's no unseen data to generalize to.</p>
+              <p><strong>In a real project: No.</strong> You would always include test set evaluation, cross-validation, and proper metrics before trusting a model.</p>
+              <div class="qa-answer ara-ans">
+                في الـ notebook ده: أيوه، مقبول عن قصد. الـ 10 rows دول مش عينة — دول كل المناصب في الشركة (Population كاملة). السؤال هو "المستوى 6.5 بياخد قد إيه في الشركة دي؟" — مش "هل الموديل بيعمّم على شركات تانية؟". في أي مشروع حقيقي: لأ، لازم test set وevaluation صح.
+              </div>
+            </div>
+          </div>
+
+          <div class="qa-card">
+            <div class="qa-question" onclick="toggleQA(this)">
+              <div class="qa-q-icon gold">Q</div>
+              <div class="qa-q-text">
+                Why does the code use fit_transform in the predict step, not just transform?
+                <span class="q-sub">ليه بنعمل fit_transform مش transform بس في الـ predict؟</span>
+              </div>
+              <div class="qa-toggle">▼</div>
+            </div>
+            <div class="qa-answer">
+              <p><strong>Technically, it should be <code class="code-inline">.transform()</code> — but on this dataset it doesn't matter.</strong></p>
+              <p><code class="code-inline">fit_transform(X)</code> = learn the polynomial structure from X, then apply it. <code class="code-inline">transform(X_new)</code> = apply the already-learned structure to new data.</p>
+              <p>Since PolynomialFeatures has no "learned" parameters to fit (it just adds mathematical powers), calling <code class="code-inline">fit_transform</code> on new data gives the same result as <code class="code-inline">transform</code>. BUT in production pipelines, always use <code class="code-inline">transform()</code> on test/new data — it's the correct practice to prevent data leakage.</p>
+              <div class="qa-answer ara-ans">
+                تقنياً لازم نستخدم <code class="code-inline">.transform()</code> مش <code class="code-inline">fit_transform()</code> في الـ prediction. بس لأن PolynomialFeatures مالهوش "parameters بيتتعلم" (بس بيحسب أسس رياضية)، الاتنين بيطلعوا نفس النتيجة. في الـ production code دايمًا استخدم <code class="code-inline">.transform()</code> على الـ test data لتجنب الـ data leakage.
+              </div>
+            </div>
+          </div>
+
+          <div class="qa-card">
+            <div class="qa-question" onclick="toggleQA(this)">
+              <div class="qa-q-icon red">Q</div>
+              <div class="qa-q-text">
+                What would happen if I set degree=10 on this 10-row dataset?
+                <span class="q-sub">لو حطيت degree=10 على 10 صفوف — إيه اللي هيحصل؟</span>
+              </div>
+              <div class="qa-toggle">▼</div>
+            </div>
+            <div class="qa-answer">
+              <p><strong>Perfect fit + massive overfitting.</strong> With degree=10 and 10 data points, the polynomial has exactly 11 coefficients — enough degrees of freedom to pass through every single point exactly (R² = 1.0 on training).</p>
+              <p>But the curve would be a wild, oscillating rollercoaster between data points. Predict level 5.5 and you might get a salary of $500M or -$200K. The model memorized noise instead of learning the salary structure.</p>
+              <div class="qa-answer ara-ans">
+                مع degree=10 و10 صفوف، الموديل هيبقى عنده 11 coefficient كافية إنه يعدي من كل نقطة بالظبط. R² = 1.0 على التدريب! بس لو جربت تتنبأ بـ level 5.5 ممكن تلاقي راتب 500 مليون أو رقم سالب. الموديل حفظ الضوضاء مش نمط الداتا — ده هو الـ Overfitting بشكله الأسوأ.
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end tech qa-grid -->
+      </div>
+
+    </div>
+  </div><!-- end page-aitips -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: FULL PRO PROJECT                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="page-pro" class="page">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">PRO</div>
+        <div>
+          <div class="section-title">Full Professional PLR Project</div>
+          <div class="section-subtitle">مشروع Polynomial Regression احترافي كامل</div>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <div class="info-box-icon">🏆</div>
+        <div class="info-box-content">
+          <div class="title">Goal: Transform the 9-phase notebook into a production-grade pipeline</div>
+          <p>This page gives you the complete template. Each phase builds on the last. Run them in order in a fresh notebook to get a fully evaluated, overfitting-checked, professional PLR project.</p>
+          <div class="ara">الهدف: تحويل الـ notebook البسيط ده لمشروع كامل زي اللي بيتعمل في الشغل الحقيقي.</div>
+        </div>
+      </div>
+
+      <div class="timeline">
+
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-label">Phase A — Import &amp; EDA <span class="badge" style="background:rgba(45,212,191,0.1);color:var(--teal);border:1px solid var(--teal-dim)">exploration</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="kw">import</span> numpy <span class="kw">as</span> np, pandas <span class="kw">as</span> pd
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> seaborn <span class="kw">as</span> sns
+
+<span class="var">ds</span> <span class="op">=</span> pd.<span class="fn">read_csv</span>(<span class="str">'Position_Salaries.csv'</span>)
+
+<span class="cm"># EDA: understand the data before modeling</span>
+<span class="kw">print</span>(<span class="var">ds</span>.info())
+<span class="kw">print</span>(<span class="var">ds</span>.describe())
+
+<span class="cm"># Plot the raw data shape — ALWAYS do this before choosing model</span>
+plt.<span class="fn">figure</span>(figsize<span class="op">=</span>(<span class="num">10</span>, <span class="num">6</span>))
+plt.<span class="fn">scatter</span>(<span class="var">ds</span>[<span class="str">'Level'</span>], <span class="var">ds</span>[<span class="str">'Salary'</span>], s<span class="op">=</span><span class="num">100</span>, color<span class="op">=</span><span class="str">'#d4a843'</span>, zorder<span class="op">=</span><span class="num">3</span>)
+plt.<span class="fn">xlabel</span>(<span class="str">'Position Level'</span>); plt.<span class="fn">ylabel</span>(<span class="str">'Salary ($)'</span>)
+plt.<span class="fn">title</span>(<span class="str">'EDA: Raw Salary Distribution (looks curved → PLR candidate)'</span>)
+plt.<span class="fn">grid</span>(alpha<span class="op">=</span><span class="num">0.2</span>); plt.<span class="fn">tight_layout</span>(); plt.<span class="fn">show</span>()</pre></div></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot gold"></div>
+          <div class="timeline-label">Phase B — Feature Engineering &amp; Degree Selection <span class="badge" style="background:rgba(212,168,67,0.1);color:var(--gold);border:1px solid var(--gold-dim)">key step</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="var">X</span> <span class="op">=</span> <span class="var">ds</span>.iloc[:, <span class="num">1</span>:-<span class="num">1</span>].values
+<span class="var">y</span> <span class="op">=</span> <span class="var">ds</span>.iloc[:, -<span class="num">1</span>].values
+
+<span class="cm"># Find optimal degree by comparing R² scores</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">PolynomialFeatures</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> r2_score, mean_squared_error
+
+<span class="var">results</span> <span class="op">=</span> []
+<span class="kw">for</span> deg <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">9</span>):
+    <span class="var">pf</span>  <span class="op">=</span> <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span>deg)
+    <span class="var">Xp</span>  <span class="op">=</span> <span class="var">pf</span>.<span class="fn">fit_transform</span>(<span class="var">X</span>)
+    <span class="var">lr</span>  <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(<span class="var">Xp</span>, <span class="var">y</span>)
+    <span class="var">yp</span>  <span class="op">=</span> <span class="var">lr</span>.<span class="fn">predict</span>(<span class="var">Xp</span>)
+    <span class="var">r2</span>  <span class="op">=</span> <span class="fn">r2_score</span>(<span class="var">y</span>, <span class="var">yp</span>)
+    <span class="var">rmse</span> <span class="op">=</span> np.<span class="fn">sqrt</span>(<span class="fn">mean_squared_error</span>(<span class="var">y</span>, <span class="var">yp</span>))
+    <span class="var">results</span>.<span class="fn">append</span>({<span class="str">'Degree'</span>: deg, <span class="str">'R2'</span>: <span class="var">r2</span>, <span class="str">'RMSE'</span>: <span class="var">rmse</span>})
+    <span class="kw">print</span>(<span class="str">f"Degree {deg:&gt;2} → R² = {r2:.4f}  RMSE = ${rmse:,.0f}"</span>)
+
+<span class="var">df_res</span> <span class="op">=</span> pd.<span class="cls">DataFrame</span>(<span class="var">results</span>)
+<span class="var">best_deg</span> <span class="op">=</span> <span class="var">df_res</span>.<span class="fn">loc</span>[<span class="var">df_res</span>[<span class="str">'R2'</span>].<span class="fn">idxmax</span>(), <span class="str">'Degree'</span>]
+<span class="kw">print</span>(<span class="str">f"\nBest degree (by R²): {int(best_deg)}"</span>)</pre></div></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot blue"></div>
+          <div class="timeline-label">Phase C — Pipeline Build &amp; Train <span class="badge" style="background:rgba(96,165,250,0.1);color:var(--blue);border:1px solid var(--blue-dim)">sklearn Pipeline</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="cls">Pipeline</span>
+
+<span class="cm"># Professional: use Pipeline instead of manual fit_transform</span>
+<span class="var">BEST_DEG</span> <span class="op">=</span> <span class="num">4</span>   <span class="cm"># or use best_deg from Phase B</span>
+
+<span class="var">plr_pipe</span> <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'poly'</span>,  <span class="cls">PolynomialFeatures</span>(degree<span class="op">=</span><span class="var">BEST_DEG</span>, include_bias<span class="op">=</span><span class="kw">True</span>)),
+    (<span class="str">'model'</span>, <span class="cls">LinearRegression</span>())
+])
+
+<span class="var">plr_pipe</span>.<span class="fn">fit</span>(<span class="var">X</span>, <span class="var">y</span>)
+
+<span class="cm"># Coefficients inspection</span>
+<span class="var">coefs</span> <span class="op">=</span> <span class="var">plr_pipe</span>.<span class="fn">named_steps</span>[<span class="str">'model'</span>].coef_
+<span class="var">terms</span> <span class="op">=</span> [<span class="str">f'x^{i}'</span> <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(<span class="var">coefs</span>))]
+<span class="kw">print</span>(pd.<span class="cls">DataFrame</span>({<span class="str">'Term'</span>: <span class="var">terms</span>, <span class="str">'Coefficient'</span>: <span class="var">coefs</span>}))</pre></div></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot purple"></div>
+          <div class="timeline-label">Phase D — Evaluation &amp; Overfitting Check <span class="badge" style="background:rgba(192,132,252,0.1);color:var(--purple);border:1px solid #4a1d9c">metrics</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="kw">from</span> sklearn.metrics <span class="kw">import</span> r2_score, mean_absolute_error, mean_squared_error
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> cross_val_score
+
+<span class="var">y_pred</span> <span class="op">=</span> <span class="var">plr_pipe</span>.<span class="fn">predict</span>(<span class="var">X</span>)
+
+<span class="cm"># Training metrics</span>
+<span class="var">r2</span>   <span class="op">=</span> <span class="fn">r2_score</span>(<span class="var">y</span>, <span class="var">y_pred</span>)
+<span class="var">mae</span>  <span class="op">=</span> <span class="fn">mean_absolute_error</span>(<span class="var">y</span>, <span class="var">y_pred</span>)
+<span class="var">rmse</span> <span class="op">=</span> np.<span class="fn">sqrt</span>(<span class="fn">mean_squared_error</span>(<span class="var">y</span>, <span class="var">y_pred</span>))
+
+<span class="kw">print</span>(<span class="str">f"── Training Metrics (degree={BEST_DEG}) ──"</span>)
+<span class="kw">print</span>(<span class="str">f"R² Score : {r2:.4f}   (1.0 = perfect)"</span>)
+<span class="kw">print</span>(<span class="str">f"MAE      : ${mae:,.0f}  (avg absolute error)"</span>)
+<span class="kw">print</span>(<span class="str">f"RMSE     : ${rmse:,.0f}  (penalizes large errors more)"</span>)
+
+<span class="cm"># Cross-validation for overfitting detection</span>
+<span class="var">cv_r2</span> <span class="op">=</span> <span class="fn">cross_val_score</span>(<span class="var">plr_pipe</span>, <span class="var">X</span>, <span class="var">y</span>, cv<span class="op">=</span><span class="num">5</span>, scoring<span class="op">=</span><span class="str">'r2'</span>)
+<span class="kw">print</span>(<span class="str">f"\nCross-Val R²: mean={cv_r2.mean():.4f}, std={cv_r2.std():.4f}"</span>)
+<span class="kw">print</span>(<span class="str">"(Large gap between train R² and CV mean → overfitting)"</span>)</pre></div></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot red"></div>
+          <div class="timeline-label">Phase E — Final Visualization Dashboard <span class="badge" style="background:rgba(248,113,113,0.1);color:var(--red);border:1px solid var(--red-dim)">matplotlib subplots</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="var">X_grid</span> <span class="op">=</span> np.<span class="fn">arange</span>(<span class="fn">min</span>(<span class="var">X</span>), <span class="fn">max</span>(<span class="var">X</span>) <span class="op">+</span> <span class="num">0.1</span>, <span class="num">0.05</span>).<span class="fn">reshape</span>(-<span class="num">1</span>, <span class="num">1</span>)
+<span class="var">y_grid</span> <span class="op">=</span> <span class="var">plr_pipe</span>.<span class="fn">predict</span>(<span class="var">X_grid</span>)
+
+<span class="var">fig</span>, <span class="var">axes</span> <span class="op">=</span> plt.<span class="fn">subplots</span>(<span class="num">1</span>, <span class="num">3</span>, figsize<span class="op">=</span>(<span class="num">18</span>, <span class="num">5</span>))
+
+<span class="cm"># Plot 1: Fit curve</span>
+<span class="var">axes</span>[<span class="num">0</span>].<span class="fn">scatter</span>(<span class="var">X</span>, <span class="var">y</span>, color<span class="op">=</span><span class="str">'#f87171'</span>, s<span class="op">=</span><span class="num">100</span>, label<span class="op">=</span><span class="str">'Actual'</span>, zorder<span class="op">=</span><span class="num">3</span>)
+<span class="var">axes</span>[<span class="num">0</span>].<span class="fn">plot</span>(<span class="var">X_grid</span>, <span class="var">y_grid</span>, color<span class="op">=</span><span class="str">'#2dd4bf'</span>, lw<span class="op">=</span><span class="num">2</span>, label<span class="op">=</span><span class="str">f'Poly(deg={BEST_DEG})'</span>)
+<span class="var">axes</span>[<span class="num">0</span>].<span class="fn">set_title</span>(<span class="str">'Polynomial Fit'</span>); <span class="var">axes</span>[<span class="num">0</span>].<span class="fn">legend</span>()
+
+<span class="cm"># Plot 2: Actual vs Predicted</span>
+<span class="var">axes</span>[<span class="num">1</span>].<span class="fn">scatter</span>(<span class="var">y</span>, <span class="var">y_pred</span>, color<span class="op">=</span><span class="str">'#d4a843'</span>, s<span class="op">=</span><span class="num">100</span>)
+<span class="var">axes</span>[<span class="num">1</span>].<span class="fn">plot</span>([<span class="var">y</span>.<span class="fn">min</span>(), <span class="var">y</span>.<span class="fn">max</span>()], [<span class="var">y</span>.<span class="fn">min</span>(), <span class="var">y</span>.<span class="fn">max</span>()], <span class="str">'r--'</span>)
+<span class="var">axes</span>[<span class="num">1</span>].<span class="fn">set_xlabel</span>(<span class="str">'Actual'</span>); <span class="var">axes</span>[<span class="num">1</span>].<span class="fn">set_ylabel</span>(<span class="str">'Predicted'</span>)
+<span class="var">axes</span>[<span class="num">1</span>].<span class="fn">set_title</span>(<span class="str">f'Actual vs Predicted | R²={r2:.3f}'</span>)
+
+<span class="cm"># Plot 3: Residuals</span>
+<span class="var">resid</span> <span class="op">=</span> <span class="var">y</span> <span class="op">-</span> <span class="var">y_pred</span>
+<span class="var">axes</span>[<span class="num">2</span>].<span class="fn">scatter</span>(<span class="var">y_pred</span>, <span class="var">resid</span>, color<span class="op">=</span><span class="str">'#c084fc'</span>, s<span class="op">=</span><span class="num">100</span>)
+<span class="var">axes</span>[<span class="num">2</span>].<span class="fn">axhline</span>(<span class="num">0</span>, color<span class="op">=</span><span class="str">'red'</span>, ls<span class="op">=</span><span class="str">'--'</span>)
+<span class="var">axes</span>[<span class="num">2</span>].<span class="fn">set_xlabel</span>(<span class="str">'Predicted'</span>); <span class="var">axes</span>[<span class="num">2</span>].<span class="fn">set_ylabel</span>(<span class="str">'Residuals'</span>)
+<span class="var">axes</span>[<span class="num">2</span>].<span class="fn">set_title</span>(<span class="str">'Residual Plot'</span>)
+
+plt.<span class="fn">tight_layout</span>(); plt.<span class="fn">show</span>()</pre></div></div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot green"></div>
+          <div class="timeline-label">Phase F — Prediction Function + Export <span class="badge" style="background:rgba(74,222,128,0.1);color:var(--green);border:1px solid var(--green-dim)">production</span></div>
+          <div class="code-wrap"><div class="code-body"><pre style="font-size:12.5px"><span class="kw">import</span> joblib
+
+<span class="cm"># Wrap prediction into a clean function</span>
+<span class="kw">def</span> <span class="fn">predict_salary</span>(level):
+    <span class="str">"""Predict salary for a given position level (1.0–10.0)"""</span>
+    <span class="kw">if not</span> <span class="num">1</span> <span class="op">&lt;=</span> level <span class="op">&lt;=</span> <span class="num">10</span>:
+        <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="str">"Level must be between 1 and 10"</span>)
+    <span class="var">pred</span> <span class="op">=</span> <span class="var">plr_pipe</span>.<span class="fn">predict</span>([[level]])[<span class="num">0</span>]
+    <span class="kw">return</span> <span class="fn">max</span>(<span class="num">0</span>, <span class="var">pred</span>)   <span class="cm"># clip at 0 (no negative salaries)</span>
+
+<span class="cm"># Test</span>
+<span class="kw">for</span> lv <span class="kw">in</span> [<span class="num">6.5</span>, <span class="num">7</span>, <span class="num">8</span>, <span class="num">9.5</span>]:
+    <span class="kw">print</span>(<span class="str">f"Level {lv:&gt;4} → Predicted Salary: ${predict_salary(lv):&gt;12,.0f}"</span>)
+
+<span class="cm"># Save the pipeline for reuse (no need to retrain!)</span>
+joblib.<span class="fn">dump</span>(<span class="var">plr_pipe</span>, <span class="str">'plr_salary_model.pkl'</span>)
+<span class="kw">print</span>(<span class="str">"\nModel saved to plr_salary_model.pkl"</span>)
+
+<span class="cm"># Load it later with:</span>
+<span class="cm"># loaded = joblib.load('plr_salary_model.pkl')</span>
+<span class="cm"># loaded.predict([[6.5]])</span></pre></div></div>
+        </div>
+
+      </div><!-- end timeline -->
+
+      <div class="info-box tip" style="margin-top:20px">
+        <div class="info-box-icon">🏆</div>
+        <div class="info-box-content">
+          <div class="title">Full Pro PLR Project Checklist</div>
+          <p>✅ EDA — scatter plot to confirm non-linearity &nbsp;|&nbsp; ✅ Degree selection loop (degrees 1–8) &nbsp;|&nbsp; ✅ PolynomialFeatures + LinearRegression via Pipeline &nbsp;|&nbsp; ✅ R², MAE, RMSE metrics &nbsp;|&nbsp; ✅ Cross-validation (5-fold) &nbsp;|&nbsp; ✅ Smooth X_grid visualization &nbsp;|&nbsp; ✅ Actual vs Predicted scatter &nbsp;|&nbsp; ✅ Residual plot &nbsp;|&nbsp; ✅ Prediction function with input validation &nbsp;|&nbsp; ✅ Model export with joblib</p>
+          <div class="ara">كمّل الـ checklist ده وهيبقى عندك مشروع PLR احترافي كامل — مش مجرد fit + predict.</div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end page-pro -->
+
+</div><!-- end main -->
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleQA(el) {
+  const ans = el.nextElementSibling;
+  const toggle = el.querySelector('.qa-toggle');
+  const isOpen = ans.classList.contains('open');
+  ans.classList.toggle('open', !isOpen);
+  toggle.style.transform = isOpen ? 'rotate(0)' : 'rotate(180deg)';
+}
+
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrollTop = doc.scrollTop || document.body.scrollTop;
+  const scrollHeight = doc.scrollHeight - doc.clientHeight;
+  const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+  document.getElementById('progress').style.width = pct + '%';
+});
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('fade-in');
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.section').forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
